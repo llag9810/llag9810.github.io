@@ -32,7 +32,7 @@
 主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Acti">
 <meta property="og:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/simplehandlerexample.png">
 <meta property="og:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/handler_process.png">
-<meta property="og:updated_time" content="2017-03-14T09:16:07.000Z">
+<meta property="og:updated_time" content="2017-03-15T11:00:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android消息机制——Handler机制详解">
 <meta name="twitter:description" content="Android Handler 机制详解一些基础回顾引子一个程序的运行，就是一个进程的在执行，一个进程里面可以拥有很多个线程。
@@ -308,6 +308,7 @@
 <li>Looper负责轮询消息，每拿到一个消息会根据它的target丢给发消息的那个Handler，调用其dispatchMessage方法去处理。</li>
 </ol>
 <p>下图盗网上的，自己画不好。顺便求一波Windows和Linux上画这种流程图的工具。</p>
+<p>先写那么多，有问题以后再改……</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -321,7 +322,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2017-03-14T09:16:07.000Z" itemprop="dateUpdated">2017年3月14日 17:16</time>
+    最后更新时间：<time datetime="2017-03-15T11:00:38.000Z" itemprop="dateUpdated">2017年3月15日 19:00</time>
 </span><br>
 
 
