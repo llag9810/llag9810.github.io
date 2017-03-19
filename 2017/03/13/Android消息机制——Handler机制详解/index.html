@@ -20,24 +20,21 @@
     
     
     <meta name="keywords" content="">
-    <meta name="description" content="Android Handler 机制详解一些基础回顾引子一个程序的运行，就是一个进程的在执行，一个进程里面可以拥有很多个线程。
-
-主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Acti">
+    <meta name="description" content="Android Handler 机制详解一些基础回顾引子
+主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Activity、BroadcastReceiver、Service)都会在同一">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android消息机制——Handler机制详解">
 <meta property="og:url" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/index.html">
 <meta property="og:site_name" content="萌妹子的小窝">
-<meta property="og:description" content="Android Handler 机制详解一些基础回顾引子一个程序的运行，就是一个进程的在执行，一个进程里面可以拥有很多个线程。
-
-主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Acti">
+<meta property="og:description" content="Android Handler 机制详解一些基础回顾引子
+主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Activity、BroadcastReceiver、Service)都会在同一">
 <meta property="og:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/simplehandlerexample.png">
 <meta property="og:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/handler_process.png">
-<meta property="og:updated_time" content="2017-03-15T11:00:38.000Z">
+<meta property="og:updated_time" content="2017-03-19T10:57:11.792Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android消息机制——Handler机制详解">
-<meta name="twitter:description" content="Android Handler 机制详解一些基础回顾引子一个程序的运行，就是一个进程的在执行，一个进程里面可以拥有很多个线程。
-
-主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Acti">
+<meta name="twitter:description" content="Android Handler 机制详解一些基础回顾引子
+主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Activity、BroadcastReceiver、Service)都会在同一">
 <meta name="twitter:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/simplehandlerexample.png">
     
         <link rel="alternative" href="/atom.xml" title="萌妹子的小窝" type="application/atom+xml">
@@ -187,8 +184,7 @@
 
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
-            <h1 id="Android-Handler-机制详解"><a href="#Android-Handler-机制详解" class="headerlink" title="Android Handler 机制详解"></a>Android Handler 机制详解</h1><h2 id="一些基础回顾"><a href="#一些基础回顾" class="headerlink" title="一些基础回顾"></a>一些基础回顾</h2><h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><p>一个程序的运行，就是一个进程的在执行，一个进程里面可以拥有很多个线程。</p>
-<blockquote>
+            <h1 id="Android-Handler-机制详解"><a href="#Android-Handler-机制详解" class="headerlink" title="Android Handler 机制详解"></a>Android Handler 机制详解</h1><h2 id="一些基础回顾"><a href="#一些基础回顾" class="headerlink" title="一些基础回顾"></a>一些基础回顾</h2><h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><blockquote>
 <p>主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Activity、BroadcastReceiver、Service)都会在同一个进程(Process)里执行，且由此进程的主线程负责执行。<br>ActivityThread既要处理Activity组件的UI事件，又要处理Service后台服务工作，通常会忙不过来。为了解决此问题，主线程可以创建多个子线程来处理后台服务工作，而本身专心处理UI画面的事件。</p>
 <p>子线程： 用于执行耗时操作，比如 I/O操作和网络请求等。（安卓3.0以后要求耗访问网络必须在子线程种执行）更新UI的工作必须交给主线程，子线程在安卓里是不允许更新UI的。</p>
 </blockquote>
@@ -316,13 +312,14 @@
                 </div>
                 <div class="image-caption">Handler机制过程图</div>
             </figure>
+
         </div>
 
         <blockquote class="post-copyright">
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2017-03-15T11:00:38.000Z" itemprop="dateUpdated">2017年3月15日 19:00</time>
+    最后更新时间：<time datetime="2017-03-19T10:57:11.792Z" itemprop="dateUpdated">2017年3月19日 18:57</time>
 </span><br>
 
 
