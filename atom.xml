@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2017-03-24T11:25:34.275Z</updated>
+  <updated>2017-03-27T06:18:47.000Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -14,6 +14,77 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Stanford Algorithms Divide and Conquer笔记1</title>
+    <link href="http://llag9810.github.io/2017/03/26/Stanford-Algorithms-Divide-and-Conquer%E7%AC%94%E8%AE%B01/"/>
+    <id>http://llag9810.github.io/2017/03/26/Stanford-Algorithms-Divide-and-Conquer笔记1/</id>
+    <published>2017-03-26T15:35:53.000Z</published>
+    <updated>2017-03-27T06:18:47.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="斯坦福算法课踩坑系列-S01E01"><a href="#斯坦福算法课踩坑系列-S01E01" class="headerlink" title="斯坦福算法课踩坑系列 S01E01"></a>斯坦福算法课踩坑系列 S01E01</h1><h2 id="写在正题前"><a href="#写在正题前" class="headerlink" title="写在正题前"></a>写在正题前</h2><p>还没开始学算法，数据结构也是半吊子。脑抽在 Coursera 上面跟了这门课，上了几节后听别人说另外一门 Prinston 的讲得更接地气，少了很多数学证明，也多了很多实现细节。总之，已经买了也不能中途弃坑。所以自己打算写个长期系列。</p>
+<p>言归正传，这门课主要分为以下四个部分：</p>
+<ul>
+<li>Divide and Conquer, Sorting and Searching, and Randomized Algorithms.</li>
+<li>Graph Search, Shortest Paths, and Data Structures.</li>
+<li>Greedy Algorithms, Minimum Spanning Trees, and Dynamic Programming.</li>
+<li>Shortest Paths Revisited, NP-Complete Problems and What To Do About Them.</li>
+</ul>
+<p>目前我上完了第一部分，也就是分治、排序、搜索和随机算法。</p>
+<p>第一集先整理这两个部分：归并排序、寻找逆序对。</p>
+<h2 id="归并排序-Merge-Sort"><a href="#归并排序-Merge-Sort" class="headerlink" title="归并排序(Merge Sort)"></a>归并排序(Merge Sort)</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2017/03/26/Stanford-Algorithms-Divide-and-Conquer笔记1/Merge-sort-example.gif" alt="一图流，不展开讲" title="">
+                </div>
+                <div class="image-caption">一图流，不展开讲</div>
+            </figure>
+<p>这个没什么可以记笔记的。顾名思义，归并排序分为两步。<br>第一，递归的把数组二分；第二，一层一层的把已经排序的两个小数组进行合并。</p>
+<p>伪代码大致如下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">mergeSort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">    mergeSort(a, n / <span class="number">2</span>);</div><div class="line">    mergeSort(a + n / <span class="number">2</span>, n / <span class="number">2</span>);</div><div class="line">    merge(a, a + n / <span class="number">2</span>, n / <span class="number">2</span>, n - n / <span class="number">2</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中，前两步分治为两个子问题，最后一步是进行归并。<br>合并的过程也很简单。由于两个子数组已经排好序，所以同时对两个数组，两个指针进行一次遍历即可。<br>自己随手实现了下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">merge</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> b[], <span class="keyword">int</span> size_a, <span class="keyword">int</span> size_b, <span class="keyword">int</span> temp[])</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> count = <span class="number">0</span>; count &lt; size_a + size_b; count++) &#123;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (a[i] &lt; b[j] &amp;&amp; i &lt; size_a || j == size_b)</div><div class="line">            temp[count] = a[i++];</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (a[i] &gt;= b[j] &amp;&amp; j &lt; size_b || i == size_a)</div><div class="line">            temp[count] = b[j++];</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> count = <span class="number">0</span>; count &lt; size_a + size_b; count++) &#123;</div><div class="line">        a[count] = temp[count];</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">mergeSort</span><span class="params">(<span class="keyword">int</span>* a, <span class="keyword">int</span> n, <span class="keyword">int</span>* temp)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">    mergeSort(a, n / <span class="number">2</span>, temp);</div><div class="line">    mergeSort(a + n / <span class="number">2</span>, n - n / <span class="number">2</span>, temp + n / <span class="number">2</span>);</div><div class="line"></div><div class="line">    merge(a, a + n / <span class="number">2</span>, n / <span class="number">2</span>, n - n / <span class="number">2</span>, temp);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> a[] = &#123;<span class="number">3</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>&#125;;</div><div class="line">    <span class="keyword">int</span> *temp = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(a));</div><div class="line"></div><div class="line">    mergeSort(a, <span class="number">8</span>, temp);</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(a) / <span class="keyword">sizeof</span>(<span class="keyword">int</span>); i++) &#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"%d "</span>, temp[i]);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="寻找逆序对-Counting-Inversions"><a href="#寻找逆序对-Counting-Inversions" class="headerlink" title="寻找逆序对(Counting Inversions)"></a>寻找逆序对(Counting Inversions)</h2><p>要求：</p>
+<blockquote>
+<p>Input : array A containing the numbers 1,2,3,..,n in some arbitrary order.</p>
+<p>Output : number of inversions =  number of pairs(i,j) of array indices with i &lt; j and A[i] &gt; A[j].</p>
+</blockquote>
+<p>分析：要求的逆序对可以分为三种情况。</p>
+<ul>
+<li>情况1：i, j都在数组的前半边。</li>
+<li>情况2：i, j都在数组的后半边。</li>
+<li>情况3：i, j分别位于数组的前、后半边。</li>
+</ul>
+<p>对于前两种情况，直接递归即可，然后加上第三种情况的结果即为所求。</p>
+<p>伪代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">count(array A, length n)</div><div class="line">    if n = 1, return 0;</div><div class="line"></div><div class="line">    x = count(half of A, n / 2);</div><div class="line">    y = count(2nd half of A, n / 2);</div><div class="line">    z = countSplitInversion(A, n);     // Not implemented yet</div><div class="line">    </div><div class="line">    return x + y + z;</div></pre></td></tr></table></figure></p>
+<p>Goal : implement CountSplitInversions in linear (O(n)) time then count will run in O(nlog(n)) time.</p>
+<p>寻找 split inversion 的过程和归并排序的合并过程类似。我们不妨看几个例子：</p>
+<ol>
+<li><p>假如数组中不存在 Split Inversions</p>
+<p> 比如：<code>A = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}</code></p>
+<p> 进行分治后，</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">A = &#123;0, 1, 2, 3, 4&#125;</div><div class="line">B = &#123;5, 6, 7, 8, 9&#125;</div></pre></td></tr></table></figure>
+<p> 也就是说，前半个数组中所有的元素都比后半个数组小。对该数组进行归并，使用 i, j 两指针。此时，当 i 走到头时，j 尚未移动。</p>
+</li>
+<li><p>假如数组中存在 m 个 Split Inversions</p>
+<p> 比如：<code>A = {0, 1, 2, 3, 8, 4, 5, 6, 7, 9}</code></p>
+<p> 进行分治后，</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">A = &#123;0, 1, 2, 3, 8&#125;</div><div class="line">B = &#123;4, 5, 6, 7, 9&#125;</div></pre></td></tr></table></figure>
+<p> 执行归并的过程，i 到终点以后，j 指向7，也就是第4个元素。<br> 这个数组中有4个逆序对。</p>
+</li>
+</ol>
+<p>规律很显然，当一个指针走到头时，另一个指针的位置就是逆序对的个数。</p>
+<p>代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">countSplitInversions</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> *b, <span class="keyword">int</span> size_a, <span class="keyword">int</span> size_b)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; size_a + size_b; k++) &#123;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (i == size_a || j == size_b) <span class="keyword">break</span>;</div><div class="line">        a[i] &lt; b[j] ? i++ : j++;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> i == size_a ? j + <span class="number">1</span> : i + <span class="number">1</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">countInversions</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> n)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> x = countInversions(a, n / <span class="number">2</span>);</div><div class="line">    <span class="keyword">int</span> y = countInversions(a + n / <span class="number">2</span>, n - n / <span class="number">2</span>);</div><div class="line">    <span class="keyword">int</span> z = countSplitInversions(a, a + n / <span class="number">2</span>, n / <span class="number">2</span>, n - n / <span class="number">2</span>);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> x + y + z;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> a[] = &#123;<span class="number">1</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">2</span>, <span class="number">11</span>, <span class="number">22</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">9</span>&#125;;</div><div class="line">    <span class="keyword">int</span> result = countInversions(a, <span class="number">11</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, result);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;斯坦福算法课踩坑系列-S01E01&quot;&gt;&lt;a href=&quot;#斯坦福算法课踩坑系列-S01E01&quot; class=&quot;headerlink&quot; title=&quot;斯坦福算法课踩坑系列 S01E01&quot;&gt;&lt;/a&gt;斯坦福算法课踩坑系列 S01E01&lt;/h1&gt;&lt;h2 id=&quot;写在正题前
+    
+    </summary>
+    
+    
+      <category term="算法笔记" scheme="http://llag9810.github.io/tags/%E7%AE%97%E6%B3%95%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
   
   <entry>
     <title>Android消息机制——Handler机制详解</title>
