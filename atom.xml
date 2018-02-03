@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>萌妹子的小窝</title>
-  <subtitle>Android学习中/想学算法/游走在挂科边缘</subtitle>
+  <title>小窝</title>
+  <subtitle>Android/Java/随便写写</subtitle>
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
