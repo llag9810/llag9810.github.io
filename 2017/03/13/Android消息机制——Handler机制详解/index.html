@@ -37,11 +37,15 @@
 主线程：也叫UI线程，或称ActivityThread，用于运行四大组件和处理他们用户的交互。 ActivityThread管理应用进程的主线程的执行(相当于普通Java程序的main入口函数)，在Android系统中，在默认情况下，一个应用程序内的各个组件(如Activity、BroadcastReceiver、Service)都会在同一">
 <meta name="twitter:image" content="http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/simplehandlerexample.png">
     
-        <link rel="alternative" href="/atom.xml" title="小窝" type="application/atom+xml">
+        <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
     
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/css/style.css?v=1.4.10">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
     <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
 </head>
 
 <body>
@@ -52,7 +56,7 @@
     <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
         <i class="icon icon-lg icon-close"></i>
     </a>
-    <div class="brand-wrap">
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
       <div class="brand">
         <a href="/" class="avatar waves-effect waves-circle waves-light">
           <img src="/img/avatar.jpg">
@@ -125,7 +129,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -155,30 +159,30 @@
 
     
 
+
 </header>
 
 
 <div class="container body-wrap">
     
     <aside class="post-widget">
-        <nav class="post-toc-wrap" id="post-toc">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
             <h4>TOC</h4>
             <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Android-Handler-机制详解"><span class="post-toc-text">Android Handler 机制详解</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#一些基础回顾"><span class="post-toc-text">一些基础回顾</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#引子"><span class="post-toc-text">引子</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Handler-的简单使用"><span class="post-toc-text">Handler 的简单使用</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Handler-机制的分析理解"><span class="post-toc-text">Handler 机制的分析理解</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Message简介"><span class="post-toc-text">Message简介</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#MessageQueue-简介"><span class="post-toc-text">MessageQueue 简介</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Handler-简介"><span class="post-toc-text">Handler 简介</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Looper-简介"><span class="post-toc-text">Looper 简介</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#回到Handler和Looper"><span class="post-toc-text">回到Handler和Looper</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#题外话"><span class="post-toc-text">题外话</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol></li></ol>
         </nav>
     </aside>
-    
+
+
 <article id="post-Android消息机制——Handler机制详解"
   class="post-article article-type-post fade" itemprop="blogPost">
 
     <div class="post-card">
         <h1 class="post-card-title">Android消息机制——Handler机制详解</h1>
         <div class="post-meta">
-            <time class="post-time" title="2017年03月13日 18:47" datetime="2017-03-13T10:47:16.000Z"  itemprop="datePublished">2017-03-13</time>
+            <time class="post-time" title="2017-03-13 18:47:16" datetime="2017-03-13T10:47:16.000Z"  itemprop="datePublished">2017-03-13</time>
 
             
 
-
-            
 
             
 
@@ -316,15 +320,19 @@
         </div>
 
         <blockquote class="post-copyright">
+    
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2017-03-24T11:25:34.276Z" itemprop="dateUpdated">2017年3月24日 19:25</time>
+    Last updated: <time datetime="2017-03-24T11:25:34.276Z" itemprop="dateUpdated">2017-03-24 19:25:34</time>
 </span><br>
 
 
-        这里写留言或版权声明：<a href="/2017/03/13/Android消息机制——Handler机制详解/" target="_blank" rel="external">http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/</a>
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2017/03/13/Android消息机制——Handler机制详解/" target="_blank" rel="external">http://llag9810.github.io/2017/03/13/Android消息机制——Handler机制详解/</a>
+        
     </div>
+    
     <footer>
         <a href="http://llag9810.github.io">
             <img src="/img/avatar.jpg" alt="yifan">
@@ -416,6 +424,13 @@
 
 
 
+
+
+
+
+
+
+
 </article>
 
 
@@ -427,14 +442,18 @@
         
 
         <p>
-            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
-            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
-        <p>
-            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
-            <span>小窝 &copy; 2017 - 2018</span>
+        <p><span>yifan &copy; 2017 - 2018</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
         </p>
     </div>
 </footer>
@@ -495,10 +514,9 @@
 var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
-
 </script>
 
-<script src="/js/main.min.js?v=1.4.10"></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
 
 
 <div class="search-panel" id="search-panel">
@@ -518,11 +536,31 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 </li>
 </template>
 
-<script src="/js/search.min.js?v=1.4.10" async></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
 
 
 
 
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
 
 
 

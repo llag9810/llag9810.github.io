@@ -34,11 +34,15 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
 <meta name="twitter:description" content="ArrayList 简介ArrayList 是一个数组队列，相当于 动态数组。与Java中的数组相比，它的容量能动态增长。它继承于AbstractList，实现了List, RandomAccess, Cloneable, java.io.Serializable这些接口。
 ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。RandmoAccess 是 java 中">
     
-        <link rel="alternative" href="/atom.xml" title="小窝" type="application/atom+xml">
+        <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
     
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/css/style.css?v=1.4.10">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
     <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
 </head>
 
 <body>
@@ -49,7 +53,7 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
     <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
         <i class="icon icon-lg icon-close"></i>
     </a>
-    <div class="brand-wrap">
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
       <div class="brand">
         <a href="/" class="avatar waves-effect waves-circle waves-light">
           <img src="/img/avatar.jpg">
@@ -122,7 +126,7 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -152,30 +156,30 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
 
     
 
+
 </header>
 
 
 <div class="container body-wrap">
     
     <aside class="post-widget">
-        <nav class="post-toc-wrap" id="post-toc">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
             <h4>TOC</h4>
             <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#ArrayList-简介"><span class="post-toc-text">ArrayList 简介</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#ArrayList-属性"><span class="post-toc-text">ArrayList 属性</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#ArrayList-构造函数"><span class="post-toc-text">ArrayList 构造函数</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#默认构造函数（空参数）"><span class="post-toc-text">默认构造函数（空参数）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#接受一个-int-参数构造函数"><span class="post-toc-text">接受一个 int 参数构造函数</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#接受一个-Collection-的构造"><span class="post-toc-text">接受一个 Collection 的构造</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#add-方法"><span class="post-toc-text">add 方法</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#一个参数的-add"><span class="post-toc-text">一个参数的 add</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#两个参数的-add"><span class="post-toc-text">两个参数的 add</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#get-方法"><span class="post-toc-text">get 方法</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#set方法"><span class="post-toc-text">set方法</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#contains方法"><span class="post-toc-text">contains方法</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#remove方法"><span class="post-toc-text">remove方法</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#根据-index-下标-remove"><span class="post-toc-text">根据 index 下标 remove</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#根据对象remove"><span class="post-toc-text">根据对象remove</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#trimToSize方法"><span class="post-toc-text">trimToSize方法</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#iterator"><span class="post-toc-text">iterator</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#小结"><span class="post-toc-text">小结</span></a></li></ol>
         </nav>
     </aside>
-    
+
+
 <article id="post-ArrayList-源码解析"
   class="post-article article-type-post fade" itemprop="blogPost">
 
     <div class="post-card">
         <h1 class="post-card-title">ArrayList 源码解析</h1>
         <div class="post-meta">
-            <time class="post-time" title="2017年09月03日 12:41" datetime="2017-09-03T04:41:55.000Z"  itemprop="datePublished">2017-09-03</time>
+            <time class="post-time" title="2017-09-03 12:41:55" datetime="2017-09-03T04:41:55.000Z"  itemprop="datePublished">2017-09-03</time>
 
             
 
-
-            
 
             
 
@@ -252,15 +256,19 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
         </div>
 
         <blockquote class="post-copyright">
+    
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2018-02-03T05:21:39.116Z" itemprop="dateUpdated">2018年2月3日 13:21</time>
+    Last updated: <time datetime="2018-02-03T05:21:39.116Z" itemprop="dateUpdated">2018-02-03 13:21:39</time>
 </span><br>
 
 
-        这里写留言或版权声明：<a href="/2017/09/03/ArrayList-源码解析/" target="_blank" rel="external">http://llag9810.github.io/2017/09/03/ArrayList-源码解析/</a>
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2017/09/03/ArrayList-源码解析/" target="_blank" rel="external">http://llag9810.github.io/2017/09/03/ArrayList-源码解析/</a>
+        
     </div>
+    
     <footer>
         <a href="http://llag9810.github.io">
             <img src="/img/avatar.jpg" alt="yifan">
@@ -350,6 +358,13 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
 
 
 
+
+
+
+
+
+
+
 </article>
 
 
@@ -361,14 +376,18 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
         
 
         <p>
-            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
-            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
-        <p>
-            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
-            <span>小窝 &copy; 2017 - 2018</span>
+        <p><span>yifan &copy; 2017 - 2018</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
         </p>
     </div>
 </footer>
@@ -429,10 +448,9 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
 var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
-
 </script>
 
-<script src="/js/main.min.js?v=1.4.10"></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
 
 
 <div class="search-panel" id="search-panel">
@@ -452,11 +470,31 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 </li>
 </template>
 
-<script src="/js/search.min.js?v=1.4.10" async></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
 
 
 
 
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
 
 
 

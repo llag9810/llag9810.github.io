@@ -30,11 +30,15 @@
 <meta name="twitter:title" content="小窝">
 <meta name="twitter:description" content="Android learner">
     
-        <link rel="alternative" href="/atom.xml" title="小窝" type="application/atom+xml">
+        <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
     
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/css/style.css?v=1.4.10">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
     <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
 </head>
 
 <body>
@@ -45,7 +49,7 @@
     <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
         <i class="icon icon-lg icon-close"></i>
     </a>
-    <div class="brand-wrap">
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
       <div class="brand">
         <a href="/" class="avatar waves-effect waves-circle waves-light">
           <img src="/img/avatar.jpg">
@@ -118,7 +122,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -144,6 +148,7 @@
 
     
 
+
 </header>
 
 <div class="container body-wrap">
@@ -155,12 +160,10 @@
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2017年09月03日 12:41" datetime="2017-09-03T04:41:55.000Z"  itemprop="datePublished">2017-09-03</time>
+        <time class="post-time" title="2017-09-03 12:41:55" datetime="2017-09-03T04:41:55.000Z"  itemprop="datePublished">2017-09-03</time>
 
         
 
-
-        
 
     </div>
 
@@ -184,7 +187,7 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
     
 
         <a href="/2017/09/03/ArrayList-源码解析/" class="post-more waves-effect waves-button">
-            阅读全文...
+            Continue reading...
         </a>
     </div>
     
@@ -197,12 +200,10 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2017年06月21日 18:57" datetime="2017-06-21T10:57:08.000Z"  itemprop="datePublished">2017-06-21</time>
+        <time class="post-time" title="2017-06-21 18:57:08" datetime="2017-06-21T10:57:08.000Z"  itemprop="datePublished">2017-06-21</time>
 
         
 
-
-        
 
     </div>
 
@@ -227,7 +228,7 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
     
 
         <a href="/2017/06/21/Java-虚拟机（一）/" class="post-more waves-effect waves-button">
-            阅读全文...
+            Continue reading...
         </a>
     </div>
     
@@ -246,12 +247,10 @@ ArrayList 实现了 RandmoAccess 接口，即提供了随机访问功能。Randm
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2017年03月26日 23:35" datetime="2017-03-26T15:35:53.000Z"  itemprop="datePublished">2017-03-26</time>
+        <time class="post-time" title="2017-03-26 23:35:53" datetime="2017-03-26T15:35:53.000Z"  itemprop="datePublished">2017-03-26</time>
 
         
 
-
-        
 
     </div>
 
@@ -277,7 +276,7 @@ Divide and Conquer, Sorting and Sear...
     
 
         <a href="/2017/03/26/Stanford-Algorithms-Divide-and-Conquer笔记1/" class="post-more waves-effect waves-button">
-            阅读全文...
+            Continue reading...
         </a>
     </div>
     
@@ -296,12 +295,10 @@ Divide and Conquer, Sorting and Sear...
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2017年03月13日 18:47" datetime="2017-03-13T10:47:16.000Z"  itemprop="datePublished">2017-03-13</time>
+        <time class="post-time" title="2017-03-13 18:47:16" datetime="2017-03-13T10:47:16.000Z"  itemprop="datePublished">2017-03-13</time>
 
         
 
-
-        
 
     </div>
 
@@ -325,7 +322,7 @@ Divide and Conquer, Sorting and Sear...
     
 
         <a href="/2017/03/13/Android消息机制——Handler机制详解/" class="post-more waves-effect waves-button">
-            阅读全文...
+            Continue reading...
         </a>
     </div>
     
@@ -350,14 +347,18 @@ Divide and Conquer, Sorting and Sear...
         
 
         <p>
-            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
-            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
-        <p>
-            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
-            <span>小窝 &copy; 2017 - 2018</span>
+        <p><span>yifan &copy; 2017 - 2018</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
         </p>
     </div>
 </footer>
@@ -418,10 +419,9 @@ Divide and Conquer, Sorting and Sear...
 var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
-
 </script>
 
-<script src="/js/main.min.js?v=1.4.10"></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
 
 
 <div class="search-panel" id="search-panel">
@@ -441,11 +441,31 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 </li>
 </template>
 
-<script src="/js/search.min.js?v=1.4.10" async></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
 
 
 
 
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
 
 
 
