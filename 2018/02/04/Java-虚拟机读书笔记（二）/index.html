@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Java 虚拟机读书笔记（二） | 小窝 | Android/Java/随便写写</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="">
+    <meta name="description" content="概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 虚拟机读书笔记（二）">
+<meta property="og:url" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/index.html">
+<meta property="og:site_name" content="小窝">
+<meta property="og:description" content="概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门">
+<meta property="og:updated_time" content="2018-02-04T15:38:54.560Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 虚拟机读书笔记（二）">
+<meta name="twitter:description" content="概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门">
+    
+        <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">yifan</h5>
+          <a href="mailto:llag9810@outlook.com" title="llag9810@outlook.com" class="mail">llag9810@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/llag9810" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/llag9810" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Java 虚拟机读书笔记（二）</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Java 虚拟机读书笔记（二）</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2018-02-04T15:13:35.000Z" itemprop="datePublished" class="page-time">
+  2018-02-04
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#概述"><span class="post-toc-text">概述</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#GC-简介"><span class="post-toc-text">GC 简介</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#判断对象是否“存活”"><span class="post-toc-text">判断对象是否“存活”</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#引用计数"><span class="post-toc-text">引用计数</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#可达性分析"><span class="post-toc-text">可达性分析</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Java-虚拟机读书笔记（二）"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Java 虚拟机读书笔记（二）</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2018-02-04 23:13:35" datetime="2018-02-04T15:13:35.000Z"  itemprop="datePublished">2018-02-04</time>
+
+            
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
+<h1 id="GC-简介"><a href="#GC-简介" class="headerlink" title="GC 简介"></a>GC 简介</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
+<ul>
+<li>哪些内存需要回收?</li>
+<li>什么时候回收?</li>
+<li>如何回收?</li>
+</ul>
+<p>回到我们熟悉的 Java 语言，不妨回顾Java内存运行时区域的各个部分。其中程序计数器、虚拟机栈、本地方法栈3个区域随线程而生，随线程而灭。栈中的栈帧随着方法的进入和退出而有条不紊地执行着出栈和入栈操作。每一个栈帧中分配多少内存基本上是在类结构确定下来时就已知的(尽管在运行期会由JIT编译器<br>进行一些优化,但在本章基于概念模型的讨论中,大体上可以认为是编译期可知的。)因此这几个区域的内存分配和回收都具备确定性,在这几个区域内就不需要过多考虑回收的问题。因为方法结束或者线程结束时,内存自然就跟随着回收了。</p>
+<p>而 Java 堆和方法区则不一样,一个接口中的多个实现类需要的内存可能不一样,一个方法中的多个分支需要的内存也可能不一样,我们只有在程序处于运行期间时才能知道会创建哪些对象,这部分内存的分配和回收都是动态的。</p>
+<p>所以垃圾收集器所关注的是这部分（堆和方法区）内存。</p>
+<h1 id="判断对象是否“存活”"><a href="#判断对象是否“存活”" class="headerlink" title="判断对象是否“存活”"></a>判断对象是否“存活”</h1><p>在堆里面存放着 Java 世界中几乎所有的对象实例垃圾收集器在对堆进行回收前，第一件事情就是要确定这些对象之中哪些还“存活”着，哪些已经“死去”(即不可能再被任何途径使用的对象)。</p>
+<p>下面简要介绍两种判断对象存活的算法:引用计数和可达性分析。</p>
+<h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>引用计数是一种简单的判断对象存活的算法。其算法是这样的：</p>
+<ul>
+<li>给对象中添加一个引用计数器，每当有一个地方引用它时，计数器值就加 1 ；每当有一个引用失效时，计数器值就减 1 。</li>
+<li>任何时刻计数器为 0 的对象就是不可能再被使用的对象，即可以被回收的对象。</li>
+</ul>
+<p>客观地说，引用计数算法(Reference Counting)的实现简单，判定效率也很高，在大部分情况下它都是一个不错的算法。但是,至少主流的 Java 虚拟机里面没有选用引用计数算法来管理内存，其中最主要的原因是它很难解决对象之间相互<strong>循环引用</strong>的问题。</p>
+<p>举个简单的例子，见下面代码中的<code>testGC()</code>方法：对象 objA 和 objB 都有成员变量<code>instance</code>，令<code>objA.instance = objB</code>及<code>objB.instance = objA</code>。除此之外,这两个对象再无任何引用。也就是说实际上这两个对象已经不可能再被访问。</p>
+<p>但是，它们因为互相引用着对方，导致它们的引用计数都为1，于是引用计数算法无法通知 GC 收集器回收它们。</p>
+<p>（下面代码摘抄自《深入理解 Java 虚拟机》第二版 3.2.1 章节）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">*testGC()方法执行后,objA和objB会不会被GC呢?</div><div class="line">*<span class="doctag">@author</span> zzm</div><div class="line">*/</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReferenceCountingGC</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> Object instance = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> _1MB = <span class="number">1024</span>*<span class="number">1024</span>;</div><div class="line">    <span class="comment">/**</span></div><div class="line">    *这个成员属性的唯一意义就是占点内存,以便能在GC日志中看清楚是否被回收过</div><div class="line">    */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] bigSize = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span> * _1MB];</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testGC</span><span class="params">()</span> </span>&#123;</div><div class="line">        ReferenceCountingGC objA = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        ReferenceCountingGC objB = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        objA.instance = objB;</div><div class="line">        objB.instance = objA;</div><div class="line">        objA = <span class="keyword">null</span>;</div><div class="line">        objB = <span class="keyword">null</span>;</div><div class="line">        <span class="comment">//假设在这行发生GC,objA和objB是否能被回收?</span></div><div class="line">        System.gc();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果（摘抄自书籍）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[FullGC(System)[Tenured:0K-&gt;210K(10240K),0.0149142secs]4603K-&gt;210K(19456K),[Perm:2999K-&gt;2999K(21248K)],0.0150007 secs][Times:user=0.01 sys=0.00,real=0.02 secs]</div><div class="line">Heap</div><div class="line">def new generation total 9216K,used 82K[0x00000000055e0000,0x0000000005fe0000,0x0000000005fe0000)</div><div class="line">Eden space 8192K,1%used[0x00000000055e0000,0x00000000055f4850,0x0000000005de0000)</div><div class="line">from space 1024K,0%used[0x0000000005de0000,0x0000000005de0000,0x0000000005ee0000)</div><div class="line">to space 1024K,0%used[0x0000000005ee0000,0x0000000005ee0000,0x0000000005fe0000)</div><div class="line">tenured generation total 10240K,used 210K[0x0000000005fe0000,0x00000000069e0000,0x00000000069e0000)</div><div class="line">the space 10240K,2%used[0x0000000005fe0000,0x0000000006014a18,0x0000000006014c00,0x00000000069e0000)</div><div class="line">compacting perm gen total 21248K,used 3016K[0x00000000069e0000,0x0000000007ea0000,0x000000000bde0000)</div><div class="line">the space 21248K,14%used[0x00000000069e0000,0x0000000006cd2398,0x0000000006cd2400,0x0000000007ea0000)</div><div class="line">No shared spaces configured.</div></pre></td></tr></table></figure></p>
+<p>很显然，日志中的”4603k -&gt; 210k”说明这两个对象成功的被回收。这也从侧面说明了虚拟机并不是通过引用计数来实现垃圾回收的。</p>
+<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>在目前的主流语言中，基本上都是通过可达性分析(Reachability Analysis)来判定对象的存活与否。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最終更新：<time datetime="2018-02-04T15:38:54.560Z" itemprop="dateUpdated">2018-02-04 23:38:54</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2018/02/04/Java-虚拟机读书笔记（二）/" target="_blank" rel="external">http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="http://llag9810.github.io">
+            <img src="/img/avatar.jpg" alt="yifan">
+            yifan
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&source=Android learner" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 虚拟机读书笔记（二）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/09/03/ArrayList-源码解析/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">ArrayList 源码解析</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>このブログの内容物は<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>yifan &copy; 2017 - 2018</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&source=Android learner" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 虚拟机读书笔记（二）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-03T05:21:39.116Z</updated>
+  <updated>2018-02-04T15:38:54.560Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -14,6 +14,48 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Java 虚拟机读书笔记（二）</title>
+    <link href="http://llag9810.github.io/2018/02/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
+    <id>http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</id>
+    <published>2018-02-04T15:13:35.000Z</published>
+    <updated>2018-02-04T15:38:54.560Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
+<h1 id="GC-简介"><a href="#GC-简介" class="headerlink" title="GC 简介"></a>GC 简介</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
+<ul>
+<li>哪些内存需要回收?</li>
+<li>什么时候回收?</li>
+<li>如何回收?</li>
+</ul>
+<p>回到我们熟悉的 Java 语言，不妨回顾Java内存运行时区域的各个部分。其中程序计数器、虚拟机栈、本地方法栈3个区域随线程而生，随线程而灭。栈中的栈帧随着方法的进入和退出而有条不紊地执行着出栈和入栈操作。每一个栈帧中分配多少内存基本上是在类结构确定下来时就已知的(尽管在运行期会由JIT编译器<br>进行一些优化,但在本章基于概念模型的讨论中,大体上可以认为是编译期可知的。)因此这几个区域的内存分配和回收都具备确定性,在这几个区域内就不需要过多考虑回收的问题。因为方法结束或者线程结束时,内存自然就跟随着回收了。</p>
+<p>而 Java 堆和方法区则不一样,一个接口中的多个实现类需要的内存可能不一样,一个方法中的多个分支需要的内存也可能不一样,我们只有在程序处于运行期间时才能知道会创建哪些对象,这部分内存的分配和回收都是动态的。</p>
+<p>所以垃圾收集器所关注的是这部分（堆和方法区）内存。</p>
+<h1 id="判断对象是否“存活”"><a href="#判断对象是否“存活”" class="headerlink" title="判断对象是否“存活”"></a>判断对象是否“存活”</h1><p>在堆里面存放着 Java 世界中几乎所有的对象实例垃圾收集器在对堆进行回收前，第一件事情就是要确定这些对象之中哪些还“存活”着，哪些已经“死去”(即不可能再被任何途径使用的对象)。</p>
+<p>下面简要介绍两种判断对象存活的算法:引用计数和可达性分析。</p>
+<h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>引用计数是一种简单的判断对象存活的算法。其算法是这样的：</p>
+<ul>
+<li>给对象中添加一个引用计数器，每当有一个地方引用它时，计数器值就加 1 ；每当有一个引用失效时，计数器值就减 1 。</li>
+<li>任何时刻计数器为 0 的对象就是不可能再被使用的对象，即可以被回收的对象。</li>
+</ul>
+<p>客观地说，引用计数算法(Reference Counting)的实现简单，判定效率也很高，在大部分情况下它都是一个不错的算法。但是,至少主流的 Java 虚拟机里面没有选用引用计数算法来管理内存，其中最主要的原因是它很难解决对象之间相互<strong>循环引用</strong>的问题。</p>
+<p>举个简单的例子，见下面代码中的<code>testGC()</code>方法：对象 objA 和 objB 都有成员变量<code>instance</code>，令<code>objA.instance = objB</code>及<code>objB.instance = objA</code>。除此之外,这两个对象再无任何引用。也就是说实际上这两个对象已经不可能再被访问。</p>
+<p>但是，它们因为互相引用着对方，导致它们的引用计数都为1，于是引用计数算法无法通知 GC 收集器回收它们。</p>
+<p>（下面代码摘抄自《深入理解 Java 虚拟机》第二版 3.2.1 章节）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">*testGC()方法执行后,objA和objB会不会被GC呢?</div><div class="line">*<span class="doctag">@author</span> zzm</div><div class="line">*/</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReferenceCountingGC</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> Object instance = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> _1MB = <span class="number">1024</span>*<span class="number">1024</span>;</div><div class="line">    <span class="comment">/**</span></div><div class="line">    *这个成员属性的唯一意义就是占点内存,以便能在GC日志中看清楚是否被回收过</div><div class="line">    */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] bigSize = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span> * _1MB];</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testGC</span><span class="params">()</span> </span>&#123;</div><div class="line">        ReferenceCountingGC objA = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        ReferenceCountingGC objB = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        objA.instance = objB;</div><div class="line">        objB.instance = objA;</div><div class="line">        objA = <span class="keyword">null</span>;</div><div class="line">        objB = <span class="keyword">null</span>;</div><div class="line">        <span class="comment">//假设在这行发生GC,objA和objB是否能被回收?</span></div><div class="line">        System.gc();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果（摘抄自书籍）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[FullGC(System)[Tenured:0K-&gt;210K(10240K),0.0149142secs]4603K-&gt;210K(19456K),[Perm:2999K-&gt;2999K(21248K)],0.0150007 secs][Times:user=0.01 sys=0.00,real=0.02 secs]</div><div class="line">Heap</div><div class="line">def new generation total 9216K,used 82K[0x00000000055e0000,0x0000000005fe0000,0x0000000005fe0000)</div><div class="line">Eden space 8192K,1%used[0x00000000055e0000,0x00000000055f4850,0x0000000005de0000)</div><div class="line">from space 1024K,0%used[0x0000000005de0000,0x0000000005de0000,0x0000000005ee0000)</div><div class="line">to space 1024K,0%used[0x0000000005ee0000,0x0000000005ee0000,0x0000000005fe0000)</div><div class="line">tenured generation total 10240K,used 210K[0x0000000005fe0000,0x00000000069e0000,0x00000000069e0000)</div><div class="line">the space 10240K,2%used[0x0000000005fe0000,0x0000000006014a18,0x0000000006014c00,0x00000000069e0000)</div><div class="line">compacting perm gen total 21248K,used 3016K[0x00000000069e0000,0x0000000007ea0000,0x000000000bde0000)</div><div class="line">the space 21248K,14%used[0x00000000069e0000,0x0000000006cd2398,0x0000000006cd2400,0x0000000007ea0000)</div><div class="line">No shared spaces configured.</div></pre></td></tr></table></figure></p>
+<p>很显然，日志中的”4603k -&gt; 210k”说明这两个对象成功的被回收。这也从侧面说明了虚拟机并不是通过引用计数来实现垃圾回收的。</p>
+<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>在目前的主流语言中，基本上都是通过可达性分析(Reachability Analysis)来判定对象的存活与否。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h1&gt;&lt;p&gt;这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有&lt;code&gt;final
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>ArrayList 源码解析</title>
@@ -105,9 +147,10 @@
     <link href="http://llag9810.github.io/2017/06/21/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%88%E4%B8%80%EF%BC%89/"/>
     <id>http://llag9810.github.io/2017/06/21/Java-虚拟机（一）/</id>
     <published>2017-06-21T10:57:08.000Z</published>
-    <updated>2017-07-09T06:20:49.000Z</updated>
+    <updated>2018-02-04T15:16:31.000Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="运行时数据区-Runtime-Data-Area"><a href="#运行时数据区-Runtime-Data-Area" class="headerlink" title="运行时数据区 Runtime Data Area"></a>运行时数据区 Runtime Data Area</h1><p>Java虚拟机在执行Java程序的过程中会把它所管理的内存划分为若干个不同的数据区<br>域。这些区域都有各自的用途，以及创建和销毁的时间，有的区域随着虚拟机进程的启动而<br>存在，有些区域则依赖用户线程的启动和结束而建立和销毁。根据Java虚拟机规范的规定，Java虚拟机所管理的内存将会包括以下几个运行时数据区域，如下图所示。</p>
+    <content type="html"><![CDATA[<p>这部分博客对应的是《深入理解 Java 虚拟机》第二章的部分内容，关于 OOM 异常的部分后面再填坑。</p>
+<h1 id="运行时数据区-Runtime-Data-Area"><a href="#运行时数据区-Runtime-Data-Area" class="headerlink" title="运行时数据区 Runtime Data Area"></a>运行时数据区 Runtime Data Area</h1><p>Java虚拟机在执行Java程序的过程中会把它所管理的内存划分为若干个不同的数据区<br>域。这些区域都有各自的用途，以及创建和销毁的时间，有的区域随着虚拟机进程的启动而<br>存在，有些区域则依赖用户线程的启动和结束而建立和销毁。根据Java虚拟机规范的规定，Java虚拟机所管理的内存将会包括以下几个运行时数据区域，如下图所示。</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -247,7 +290,8 @@
     
     <summary type="html">
     
-      &lt;h1 id=&quot;运行时数据区-Runtime-Data-Area&quot;&gt;&lt;a href=&quot;#运行时数据区-Runtime-Data-Area&quot; class=&quot;headerlink&quot; title=&quot;运行时数据区 Runtime Data Area&quot;&gt;&lt;/a&gt;运行时数据区 Runtime
+      &lt;p&gt;这部分博客对应的是《深入理解 Java 虚拟机》第二章的部分内容，关于 OOM 异常的部分后面再填坑。&lt;/p&gt;
+&lt;h1 id=&quot;运行时数据区-Runtime-Data-Area&quot;&gt;&lt;a href=&quot;#运行时数据区-Runtime-Data-Area&quot; class=&quot;head
     
     </summary>
     
