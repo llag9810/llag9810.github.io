@@ -29,7 +29,7 @@
 <meta property="og:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
 <meta property="og:image" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png">
-<meta property="og:updated_time" content="2018-02-04T16:33:33.544Z">
+<meta property="og:updated_time" content="2018-02-04T16:34:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 虚拟机读书笔记（二）">
 <meta name="twitter:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
@@ -261,7 +261,7 @@
 </ul>
 <p>最后引用书本上的一段话结束这篇博客：</p>
 <blockquote>
-<p>需要特别说明的是,上面关于对象死亡时 finalize() 方法的描述可能带有悲情的艺术色彩，笔者并不鼓励大家使用这种方法来拯救对象。相反，笔者建议大家尽量避免使用它，因为它不是 C/C++ 中的析构函数，而是 Java 刚诞生时为了使C/C++程序员更容易接受它所做出的一个妥协。它的运行代价高昂，不确定性大，无法保证各个对象的调用顺序。有些教材中描述它适合做“关闭外部资源”之类的工作，这完全是对这个方法用途的一种自我安慰。finalize()能做的所有工作，使用 try-finally 或者其他方式都可以做得更好、更及时，所以笔者建议大家完全可以忘掉Java语言中有这个方法的存在。</p>
+<p>需要特别说明的是，上面关于对象死亡时 finalize() 方法的描述可能带有悲情的艺术色彩，笔者并不鼓励大家使用这种方法来拯救对象。相反，笔者建议大家尽量避免使用它，因为它不是 C/C++ 中的析构函数，而是 Java 刚诞生时为了使 C/C++ 程序员更容易接受它所做出的一个妥协。它的运行代价高昂，不确定性大，无法保证各个对象的调用顺序。有些教材中描述它适合做“关闭外部资源”之类的工作，这完全是对这个方法用途的一种自我安慰。finalize()能做的所有工作，使用 try-finally 或者其他方式都可以做得更好、更及时，所以笔者建议大家完全可以忘掉Java语言中有这个方法的存在。</p>
 </blockquote>
 
         </div>
@@ -271,7 +271,7 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2018-02-04T16:33:33.544Z" itemprop="dateUpdated">2018-02-05 00:33:33</time>
+    Last updated: <time datetime="2018-02-04T16:34:08.000Z" itemprop="dateUpdated">2018-02-05 00:34:08</time>
 </span><br>
 
 
