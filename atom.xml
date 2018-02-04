@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-04T16:03:33.421Z</updated>
+  <updated>2018-02-04T16:33:08.000Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -20,10 +20,10 @@
     <link href="http://llag9810.github.io/2018/02/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</id>
     <published>2018-02-04T15:13:35.000Z</published>
-    <updated>2018-02-04T16:03:33.421Z</updated>
+    <updated>2018-02-04T16:33:08.000Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
-<h1 id="GC-简介"><a href="#GC-简介" class="headerlink" title="GC 简介"></a>GC 简介</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
+    <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
+<h1 id="2-什么是垃圾回收？"><a href="#2-什么是垃圾回收？" class="headerlink" title="2. 什么是垃圾回收？"></a>2. 什么是垃圾回收？</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
 <ul>
 <li>哪些内存需要回收?</li>
 <li>什么时候回收?</li>
@@ -32,9 +32,9 @@
 <p>回到我们熟悉的 Java 语言，不妨回顾Java内存运行时区域的各个部分。其中程序计数器、虚拟机栈、本地方法栈3个区域随线程而生，随线程而灭。栈中的栈帧随着方法的进入和退出而有条不紊地执行着出栈和入栈操作。每一个栈帧中分配多少内存基本上是在类结构确定下来时就已知的(尽管在运行期会由JIT编译器<br>进行一些优化,但在本章基于概念模型的讨论中,大体上可以认为是编译期可知的。)因此这几个区域的内存分配和回收都具备确定性,在这几个区域内就不需要过多考虑回收的问题。因为方法结束或者线程结束时,内存自然就跟随着回收了。</p>
 <p>而 Java 堆和方法区则不一样,一个接口中的多个实现类需要的内存可能不一样,一个方法中的多个分支需要的内存也可能不一样,我们只有在程序处于运行期间时才能知道会创建哪些对象,这部分内存的分配和回收都是动态的。</p>
 <p>所以垃圾收集器所关注的是这部分（堆和方法区）内存。</p>
-<h1 id="判断对象是否“存活”"><a href="#判断对象是否“存活”" class="headerlink" title="判断对象是否“存活”"></a>判断对象是否“存活”</h1><p>在堆里面存放着 Java 世界中几乎所有的对象实例垃圾收集器在对堆进行回收前，第一件事情就是要确定这些对象之中哪些还“存活”着，哪些已经“死去”(即不可能再被任何途径使用的对象)。</p>
+<h1 id="3-判断对象是否“存活”——-GC-算法简介"><a href="#3-判断对象是否“存活”——-GC-算法简介" class="headerlink" title="3. 判断对象是否“存活”—— GC 算法简介"></a>3. 判断对象是否“存活”—— GC 算法简介</h1><p>在堆里面存放着 Java 世界中几乎所有的对象实例垃圾收集器在对堆进行回收前，第一件事情就是要确定这些对象之中哪些还“存活”着，哪些已经“死去”(即不可能再被任何途径使用的对象)。</p>
 <p>下面简要介绍两种判断对象存活的算法:引用计数和可达性分析。</p>
-<h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>引用计数是一种简单的判断对象存活的算法。其算法是这样的：</p>
+<h2 id="3-1-引用计数"><a href="#3-1-引用计数" class="headerlink" title="3.1 引用计数"></a>3.1 引用计数</h2><p>引用计数是一种简单的判断对象存活的算法。其算法是这样的：</p>
 <ul>
 <li>给对象中添加一个引用计数器，每当有一个地方引用它时，计数器值就加 1 ；每当有一个引用失效时，计数器值就减 1 。</li>
 <li>任何时刻计数器为 0 的对象就是不可能再被使用的对象，即可以被回收的对象。</li>
@@ -45,7 +45,7 @@
 <p>（下面代码摘抄自《深入理解 Java 虚拟机》第二版 3.2.1 章节）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">*testGC()方法执行后,objA和objB会不会被GC呢?</div><div class="line">*<span class="doctag">@author</span> zzm</div><div class="line">*/</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReferenceCountingGC</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> Object instance = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> _1MB = <span class="number">1024</span>*<span class="number">1024</span>;</div><div class="line">    <span class="comment">/**</span></div><div class="line">    *这个成员属性的唯一意义就是占点内存,以便能在GC日志中看清楚是否被回收过</div><div class="line">    */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] bigSize = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span> * _1MB];</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testGC</span><span class="params">()</span> </span>&#123;</div><div class="line">        ReferenceCountingGC objA = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        ReferenceCountingGC objB = <span class="keyword">new</span> ReferenceCountingGC();</div><div class="line">        objA.instance = objB;</div><div class="line">        objB.instance = objA;</div><div class="line">        objA = <span class="keyword">null</span>;</div><div class="line">        objB = <span class="keyword">null</span>;</div><div class="line">        <span class="comment">//假设在这行发生GC,objA和objB是否能被回收?</span></div><div class="line">        System.gc();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>运行结果（摘抄自书籍）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[FullGC(System)[Tenured:0K-&gt;210K(10240K),0.0149142secs]4603K-&gt;210K(19456K),[Perm:2999K-&gt;2999K(21248K)],0.0150007 secs][Times:user=0.01 sys=0.00,real=0.02 secs]</div><div class="line">Heap</div><div class="line">def new generation total 9216K,used 82K[0x00000000055e0000,0x0000000005fe0000,0x0000000005fe0000)</div><div class="line">Eden space 8192K,1%used[0x00000000055e0000,0x00000000055f4850,0x0000000005de0000)</div><div class="line">from space 1024K,0%used[0x0000000005de0000,0x0000000005de0000,0x0000000005ee0000)</div><div class="line">to space 1024K,0%used[0x0000000005ee0000,0x0000000005ee0000,0x0000000005fe0000)</div><div class="line">tenured generation total 10240K,used 210K[0x0000000005fe0000,0x00000000069e0000,0x00000000069e0000)</div><div class="line">the space 10240K,2%used[0x0000000005fe0000,0x0000000006014a18,0x0000000006014c00,0x00000000069e0000)</div><div class="line">compacting perm gen total 21248K,used 3016K[0x00000000069e0000,0x0000000007ea0000,0x000000000bde0000)</div><div class="line">the space 21248K,14%used[0x00000000069e0000,0x0000000006cd2398,0x0000000006cd2400,0x0000000007ea0000)</div><div class="line">No shared spaces configured.</div></pre></td></tr></table></figure></p>
 <p>很显然，日志中的”4603k -&gt; 210k”说明这两个对象成功的被回收。这也从侧面说明了虚拟机并不是通过引用计数来实现垃圾回收的。</p>
-<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>在目前的主流语言中，基本上都是通过可达性分析(Reachability Analysis)来判定对象的存活与否。</p>
+<h2 id="3-2-可达性分析"><a href="#3-2-可达性分析" class="headerlink" title="3.2 可达性分析"></a>3.2 可达性分析</h2><p>在目前的主流语言中，基本上都是通过可达性分析(Reachability Analysis)来判定对象的存活与否。</p>
 <p>这个算法的基本思路就是通过一系列的称为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链(Reference Chain)，当一个对象到 GC Roots 没有任何引用链相连(用图论的话来说,就是从GC Roots到这个对象不可达)时，则证明此对象是不可用的。</p>
 <p>如下图所示，对象object 5、object 6、object 7虽然互相有关联,但是它们到GC Roots是不可达的,所以它们将会被判定为是可回收的对象。</p>
 <figure class="image-bubble">
@@ -62,19 +62,47 @@
 <li>方法区中常量引用的对象。</li>
 <li>native 方法栈中 JNI（Native 方法）引用的对象。</li>
 </ul>
-<h1 id="强引用、软引用、弱引用、虚引用"><a href="#强引用、软引用、弱引用、虚引用" class="headerlink" title="强引用、软引用、弱引用、虚引用"></a>强引用、软引用、弱引用、虚引用</h1><p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象的引用链是否可达，判定对象是否存活都与“引用”有关。Java 中的引用的定义很传统：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。这种定义很纯粹，但是太过狭隘。</p>
+<h1 id="4-强、软、弱、虚四种引用"><a href="#4-强、软、弱、虚四种引用" class="headerlink" title="4. 强、软、弱、虚四种引用"></a>4. 强、软、弱、虚四种引用</h1><p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象的引用链是否可达，判定对象是否存活都与“引用”有关。Java 中的引用的定义很传统：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。这种定义很纯粹，但是太过狭隘。</p>
 <p>我们希望描述下面这种对象：当内存空间足够时，保留在内存中。当空间十分紧张时，则可以回收这些对象。于是，在 jdk 1.2以后，Java 对引用的概念进行了扩充。将引用分为强引用(Strong Reference)、软引用(Soft Reference)、弱引用(Weak Reference)、虚引用(Phantom Reference)4种,这4种引用强度依次逐渐减弱。</p>
 <ul>
-<li>强引用就是指在程序代码之中普遍存在的,类似<code>Object obj=new Object()</code>这类的引用。只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象。</li>
+<li>强引用就是指在程序代码之中普遍存在的,类似<code>Object obj = new Object()</code>这类的引用。只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象。</li>
 <li>软引用是用来描述一些还有用但并非必需的对象。对于软引用关联着的对象，在系统将要发生内存溢出异常之前，将会把这些对象列进回收范围之中进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。在JDK 1.2之后，提供了SoftReference类来实现软引用。</li>
 <li>弱引用也是用来描述非必需对象的，但是它的强度比软引用更弱一些。被弱引用关联的对象只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时,无论当前内存是否足够,<br>都会回收掉只被弱引用关联的对象。WeakReference类来实现弱引用。</li>
-<li>虚引用也称为幽灵引用或者幻影引用,它是最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一<br>个对象设置虚引用关联的唯一目的就是能在这个对象被收集器回收时收到一个系统通知。PhantomReference类来实现虚引用。</li>
+<li>虚引用也称为幽灵引用或者幻影引用,它是最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的就是能在这个对象被收集器回收时收到一个系统通知。PhantomReference类来实现虚引用。</li>
 </ul>
+<h1 id="5-生存还是死亡？——-finalize-方法简介"><a href="#5-生存还是死亡？——-finalize-方法简介" class="headerlink" title="5. 生存还是死亡？—— finalize() 方法简介"></a>5. 生存还是死亡？—— finalize() 方法简介</h1><p>虚拟机通常使用可达性分析的方式来判断对象能否回收。即使在可达性分析算法中不可达的对象，也并非是“非死不可”的。</p>
+<p>这时候它们暂时处于“缓刑”阶段。要真正宣告一个对象死亡，至少要经历<strong>两次标记过程</strong>。</p>
+<p>第一次筛选的方式如下：</p>
+<ul>
+<li>如果对象在进行可达性分析后发现没有与 GC Root 相连接的引用链，那它将会被第一次标记并且进行一次筛选。</li>
+<li>筛选的条件是此对象是否有必要执行<code>finalize()</code>方法。</li>
+<li>当对象没有重写<code>finalize()</code>方法。或者<code>finalize()</code>方法已经被虚拟机调用过了，虚拟机将这两种情况都视为“没有必要执行”。</li>
+</ul>
+<p>也就是说，执行<code>finalize()</code>的条件有两个：一是当前对象的类重写了<code>finalize()</code>方法，二是虚拟机先前还没有调用过该方法。</p>
+<p>如果这个对象被判定为有必要执行<code>finalize()</code>方法，那么这个对象将会放置在一个叫做 F-Queue 的队列之中，并在稍后由一个由虚拟机<strong>自动建立</strong>的、<strong>低优先级</strong>的 Finalizer 线程去执行它。</p>
+<p>这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束。这样做的原因是，如果一个对象在<code>finalize()</code>方法中执行缓慢，或者发生了死循环(更极端的情况)，将很可能会导致 F-Queue 队列中其他对象永久处于等待,甚至导致整个内存回收系统崩溃。</p>
+<p><code>finalize()</code>方法是对象逃脱死亡命运的最后一次机会，稍后 GC 将对 F-Queue 中的对象进行<strong>第二次小规模的标记</strong>。</p>
+<p>如果对象想要在<code>finalize()</code>中成功拯救自己，只要重新与引用链上的任何一个对象建立关联即可，譬如把自己(this关键字)赋值给某个类变量或者对象的<br>成员变量，那在第二次标记时它将被移除出“即将回收”的集合。如果对象这时候还没有逃脱，那基本上它就真的被回收了。</p>
+<p>从下面的代码中我们可以看到一个对象的<code>finalize()</code>被执行，但是它仍然可以存活。<br>（代码摘自《深入理解 Java 虚拟机》3.2章节）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">*此代码演示了两点:</div><div class="line">*1. 对象可以在被GC时自我拯救。</div><div class="line">*2. 这种自救的机会只有一次,因为一个对象的finalize()方法最多只会被系统自动调用一次</div><div class="line">*<span class="doctag">@author</span> zzm</div><div class="line">*/</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalizeEscapeGC</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> FinalizeEscapeGC SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">isAlive</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"yes,i am still alive:)"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        <span class="keyword">super</span>.finalize();</div><div class="line">        System.out.println(<span class="string">"finalize mehtod executed!"</span>);</div><div class="line">         <span class="comment">// 将自身赋值给一个静态成员变量，进行自我拯救</span></div><div class="line">        FinalizeEscapeGC.SAVE_HOOK = <span class="keyword">this</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        SAVE_HOOK = <span class="keyword">new</span> FinalizeEscapeGC();</div><div class="line">        <span class="comment">// 将SAVE_HOOK置null，使对象不可达。触发自救</span></div><div class="line">        SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line">        System.gc();</div><div class="line">        <span class="comment">// 因为finalize方法优先级很低,所以暂停0.5秒以等待它</span></div><div class="line">        Thread.sleep(<span class="number">500</span>);</div><div class="line">        <span class="keyword">if</span> (SAVE_HOOK != <span class="keyword">null</span>) &#123;</div><div class="line">            SAVE_HOOK.isAlive();</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">"no,i am dead:("</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 下面这段代码与上面的完全相同,但是这次自救却失败了</span></div><div class="line">        SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line">        System.gc();</div><div class="line">        Thread.sleep(<span class="number">500</span>);</div><div class="line">        <span class="keyword">if</span> (SAVE_HOOK != <span class="keyword">null</span>) &#123;</div><div class="line">            SAVE_HOOK.isAlive();</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">"no,i am dead:("</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">finalize mehtod executed!</div><div class="line">yes,i am still alive:)</div><div class="line">no,i am dead:(</div></pre></td></tr></table></figure></p>
+<p>从结果可以看出，第一次SAVE_HOOK 对象的<code>finalize()</code>方法确实被 GC 收集器触发过,并且在被收集前成功逃脱了。<br>另外一个值得注意的地方是，main函数代码中有两段完全一样的代码片段，执行结果却是一次逃脱成功，一次失败。这是因为任何一个对象的<code>finalize()</code>方法都<strong>只会被系统自动调用一次</strong>。<br>如果对象面临下一次回收，它的<code>finalize()</code>方法不会被再次执行，因此第二段代码的自救行动失败了。</p>
+<h1 id="6-小结"><a href="#6-小结" class="headerlink" title="6. 小结"></a>6. 小结</h1><ul>
+<li><p>GC 算法包括引用计数和可达性分析两种。前者实现较为简单，但是会有循环引用的问题。目前的主流语言使用的都是后者。在 Java 中，GC root 包括栈中的引用对象，方法区中的 static 引用和常量、native 方法中引用的对象。</p>
+</li>
+<li><p>强、软、弱、虚四种引用强度依次减弱。其中，强引用即代码中最常见的赋值引用，强引用只要存在就不会被回收。后面三种引用都是用 Java 中提供的类来使用。其中软引用会在系统即将发生内存异常时列入回收范围，当回收后内存依然不够时，会被回收。弱引用只要 GC 工作，无论内存足够与否都会被回收。虚引用无法通过其获得对象示例，只是会在被回收时通知。</p>
+</li>
+<li><p>在 GC 时调用<code>finalize()</code>需要满足两个条件：当前对象的类重写了<code>finalize()</code>方法，二是虚拟机先前还没有调用过该方法。如果这个对象被判定为有必要执行<code>finalize()</code>方法，会放置在 F-Queue 中由低优先级线程 Finalizer 来执行。如果对象想要在<code>finalize()</code>中成功拯救自己，只要重新与引用链上的任何一个对象建立关联即可。每个对象的<code>finalize()</code><strong>只能执行一次</strong>，也就是说只有一次机会。</p>
+</li>
+</ul>
+<p>最后引用书本上的一段话结束这篇博客：</p>
+<blockquote>
+<p>需要特别说明的是,上面关于对象死亡时 finalize() 方法的描述可能带有悲情的艺术色彩，笔者并不鼓励大家使用这种方法来拯救对象。相反，笔者建议大家尽量避免使用它，因为它不是 C/C++ 中的析构函数，而是 Java 刚诞生时为了使C/C++程序员更容易接受它所做出的一个妥协。它的运行代价高昂，不确定性大，无法保证各个对象的调用顺序。有些教材中描述它适合做“关闭外部资源”之类的工作，这完全是对这个方法用途的一种自我安慰。finalize()能做的所有工作，使用 try-finally 或者其他方式都可以做得更好、更及时，所以笔者建议大家完全可以忘掉Java语言中有这个方法的存在。</p>
+</blockquote>
 ]]></content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h1&gt;&lt;p&gt;这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有&lt;
+      &lt;h1 id=&quot;1-概述&quot;&gt;&lt;a href=&quot;#1-概述&quot; class=&quot;headerlink&quot; title=&quot;1. 概述&quot;&gt;&lt;/a&gt;1. 概述&lt;/h1&gt;&lt;p&gt;这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软
     
     </summary>
     
