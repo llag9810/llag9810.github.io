@@ -28,11 +28,13 @@ GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技�
 <meta property="og:site_name" content="小窝">
 <meta property="og:description" content="概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门">
-<meta property="og:updated_time" content="2018-02-04T15:38:54.560Z">
+<meta property="og:image" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png">
+<meta property="og:updated_time" content="2018-02-04T15:43:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 虚拟机读书笔记（二）">
 <meta name="twitter:description" content="概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门">
+<meta name="twitter:image" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png">
     
         <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
     
@@ -126,7 +128,7 @@ GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技�
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -209,6 +211,22 @@ GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技�
 <p>运行结果（摘抄自书籍）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[FullGC(System)[Tenured:0K-&gt;210K(10240K),0.0149142secs]4603K-&gt;210K(19456K),[Perm:2999K-&gt;2999K(21248K)],0.0150007 secs][Times:user=0.01 sys=0.00,real=0.02 secs]</div><div class="line">Heap</div><div class="line">def new generation total 9216K,used 82K[0x00000000055e0000,0x0000000005fe0000,0x0000000005fe0000)</div><div class="line">Eden space 8192K,1%used[0x00000000055e0000,0x00000000055f4850,0x0000000005de0000)</div><div class="line">from space 1024K,0%used[0x0000000005de0000,0x0000000005de0000,0x0000000005ee0000)</div><div class="line">to space 1024K,0%used[0x0000000005ee0000,0x0000000005ee0000,0x0000000005fe0000)</div><div class="line">tenured generation total 10240K,used 210K[0x0000000005fe0000,0x00000000069e0000,0x00000000069e0000)</div><div class="line">the space 10240K,2%used[0x0000000005fe0000,0x0000000006014a18,0x0000000006014c00,0x00000000069e0000)</div><div class="line">compacting perm gen total 21248K,used 3016K[0x00000000069e0000,0x0000000007ea0000,0x000000000bde0000)</div><div class="line">the space 21248K,14%used[0x00000000069e0000,0x0000000006cd2398,0x0000000006cd2400,0x0000000007ea0000)</div><div class="line">No shared spaces configured.</div></pre></td></tr></table></figure></p>
 <p>很显然，日志中的”4603k -&gt; 210k”说明这两个对象成功的被回收。这也从侧面说明了虚拟机并不是通过引用计数来实现垃圾回收的。</p>
 <h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>在目前的主流语言中，基本上都是通过可达性分析(Reachability Analysis)来判定对象的存活与否。</p>
+<p>这个算法的基本思路就是通过一系列的称为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链(Reference Chain)，当一个对象到 GC Roots 没有任何引用链相连(用图论的话来说,就是从GC Roots到这个对象不可达)时，则证明此对象是不可用的。</p>
+<p>如下图所示，对象object 5、object 6、object 7虽然互相有关联,但是它们到GC Roots是不可达的,所以它们将会被判定为是可回收的对象。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png" alt="可达性分析判断回收" title="">
+                </div>
+                <div class="image-caption">可达性分析判断回收</div>
+            </figure>
+<p>在Java中，作为 GC root 的引用一般包括：</p>
+<ul>
+<li>栈(栈帧中的局部变量)中引用的对象。</li>
+<li>方法区中类静态成员变量引用的对象。</li>
+<li>方法区中常量引用的对象。</li>
+<li>native 方法栈中 JNI（Native 方法）引用的对象。</li>
+</ul>
 
         </div>
 
@@ -217,7 +235,7 @@ GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技�
     <div class="content">
         
 <span class="post-time">
-    最終更新：<time datetime="2018-02-04T15:38:54.560Z" itemprop="dateUpdated">2018-02-04 23:38:54</time>
+    Last updated: <time datetime="2018-02-04T15:43:58.000Z" itemprop="dateUpdated">2018-02-04 23:43:58</time>
 </span><br>
 
 
@@ -336,7 +354,7 @@ GC 简介说起垃圾回收(Garbage Collection,GC),大部分人都把这项技�
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>このブログの内容物は<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
