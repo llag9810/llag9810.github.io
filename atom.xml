@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-04T15:55:42.811Z</updated>
+  <updated>2018-02-04T16:03:33.421Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://llag9810.github.io/2018/02/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</id>
     <published>2018-02-04T15:13:35.000Z</published>
-    <updated>2018-02-04T15:55:42.811Z</updated>
+    <updated>2018-02-04T16:03:33.421Z</updated>
     
     <content type="html"><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
 <h1 id="GC-简介"><a href="#GC-简介" class="headerlink" title="GC 简介"></a>GC 简介</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
@@ -62,7 +62,14 @@
 <li>方法区中常量引用的对象。</li>
 <li>native 方法栈中 JNI（Native 方法）引用的对象。</li>
 </ul>
-<p># </p>
+<h1 id="强引用、软引用、弱引用、虚引用"><a href="#强引用、软引用、弱引用、虚引用" class="headerlink" title="强引用、软引用、弱引用、虚引用"></a>强引用、软引用、弱引用、虚引用</h1><p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象的引用链是否可达，判定对象是否存活都与“引用”有关。Java 中的引用的定义很传统：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。这种定义很纯粹，但是太过狭隘。</p>
+<p>我们希望描述下面这种对象：当内存空间足够时，保留在内存中。当空间十分紧张时，则可以回收这些对象。于是，在 jdk 1.2以后，Java 对引用的概念进行了扩充。将引用分为强引用(Strong Reference)、软引用(Soft Reference)、弱引用(Weak Reference)、虚引用(Phantom Reference)4种,这4种引用强度依次逐渐减弱。</p>
+<ul>
+<li>强引用就是指在程序代码之中普遍存在的,类似<code>Object obj=new Object()</code>这类的引用。只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象。</li>
+<li>软引用是用来描述一些还有用但并非必需的对象。对于软引用关联着的对象，在系统将要发生内存溢出异常之前，将会把这些对象列进回收范围之中进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。在JDK 1.2之后，提供了SoftReference类来实现软引用。</li>
+<li>弱引用也是用来描述非必需对象的，但是它的强度比软引用更弱一些。被弱引用关联的对象只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时,无论当前内存是否足够,<br>都会回收掉只被弱引用关联的对象。WeakReference类来实现弱引用。</li>
+<li>虚引用也称为幽灵引用或者幻影引用,它是最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一<br>个对象设置虚引用关联的唯一目的就是能在这个对象被收集器回收时收到一个系统通知。PhantomReference类来实现虚引用。</li>
+</ul>
 ]]></content>
     
     <summary type="html">
