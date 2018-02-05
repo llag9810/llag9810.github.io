@@ -199,7 +199,7 @@
     <link href="http://llag9810.github.io/2017/06/21/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%88%E4%B8%80%EF%BC%89/"/>
     <id>http://llag9810.github.io/2017/06/21/Java-虚拟机（一）/</id>
     <published>2017-06-21T10:57:08.000Z</published>
-    <updated>2018-02-04T15:16:31.000Z</updated>
+    <updated>2018-02-05T15:12:53.554Z</updated>
     
     <content type="html"><![CDATA[<p>这部分博客对应的是《深入理解 Java 虚拟机》第二章的部分内容，关于 OOM 异常的部分后面再填坑。</p>
 <h1 id="运行时数据区-Runtime-Data-Area"><a href="#运行时数据区-Runtime-Data-Area" class="headerlink" title="运行时数据区 Runtime Data Area"></a>运行时数据区 Runtime Data Area</h1><p>Java虚拟机在执行Java程序的过程中会把它所管理的内存划分为若干个不同的数据区<br>域。这些区域都有各自的用途，以及创建和销毁的时间，有的区域随着虚拟机进程的启动而<br>存在，有些区域则依赖用户线程的启动和结束而建立和销毁。根据Java虚拟机规范的规定，Java虚拟机所管理的内存将会包括以下几个运行时数据区域，如下图所示。</p>
@@ -348,7 +348,7 @@
     </summary>
     
     
-      <category term="Java,虚拟机" scheme="http://llag9810.github.io/tags/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA/"/>
+      <category term="JVM" scheme="http://llag9810.github.io/tags/JVM/"/>
     
   </entry>
   
@@ -357,7 +357,7 @@
     <link href="http://llag9810.github.io/2017/03/26/Stanford-Algorithms-Divide-and-Conquer%E7%AC%94%E8%AE%B01/"/>
     <id>http://llag9810.github.io/2017/03/26/Stanford-Algorithms-Divide-and-Conquer笔记1/</id>
     <published>2017-03-26T15:35:53.000Z</published>
-    <updated>2017-05-13T08:37:45.006Z</updated>
+    <updated>2018-02-05T15:11:18.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="斯坦福算法课踩坑系列-S01E01"><a href="#斯坦福算法课踩坑系列-S01E01" class="headerlink" title="斯坦福算法课踩坑系列 S01E01"></a>斯坦福算法课踩坑系列 S01E01</h1><h2 id="写在正题前"><a href="#写在正题前" class="headerlink" title="写在正题前"></a>写在正题前</h2><p>还没开始学算法，数据结构也是半吊子。脑抽在 Coursera 上面跟了这门课，上了几节后听别人说另外一门 Prinston 的讲得更接地气，少了很多数学证明，也多了很多实现细节。总之，已经买了也不能中途弃坑。所以自己打算写个长期系列。</p>
 <p>言归正传，这门课主要分为以下四个部分：</p>
@@ -419,7 +419,7 @@
     </summary>
     
     
-      <category term="算法笔记" scheme="http://llag9810.github.io/tags/%E7%AE%97%E6%B3%95%E7%AC%94%E8%AE%B0/"/>
+      <category term="算法" scheme="http://llag9810.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
