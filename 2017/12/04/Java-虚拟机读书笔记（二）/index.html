@@ -20,20 +20,20 @@
     
     
     <meta name="keywords" content="JVM">
-    <meta name="description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
-2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
+    <meta name="description" content="1. 概述这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java 垃圾回收机制（上）—— GC 简介">
 <meta property="og:url" content="http://llag9810.github.io/2017/12/04/Java-虚拟机读书笔记（二）/index.html">
 <meta property="og:site_name" content="小窝">
-<meta property="og:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
-2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
+<meta property="og:description" content="1. 概述这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于">
 <meta property="og:image" content="http://llag9810.github.io/2017/12/04/Java-虚拟机读书笔记（二）/gcroot.png">
-<meta property="og:updated_time" content="2018-02-07T14:03:10.088Z">
+<meta property="og:updated_time" content="2018-02-07T14:20:21.821Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 垃圾回收机制（上）—— GC 简介">
-<meta name="twitter:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
-2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
+<meta name="twitter:description" content="1. 概述这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
+2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于">
 <meta name="twitter:image" content="http://llag9810.github.io/2017/12/04/Java-虚拟机读书笔记（二）/gcroot.png">
     
         <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
@@ -128,7 +128,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -187,7 +187,7 @@
 
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
-            <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
+            <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
 <h1 id="2-什么是垃圾回收？"><a href="#2-什么是垃圾回收？" class="headerlink" title="2. 什么是垃圾回收？"></a>2. 什么是垃圾回收？</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
 <ul>
 <li>哪些内存需要回收?</li>
@@ -277,7 +277,7 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2018-02-07T14:03:10.088Z" itemprop="dateUpdated">2018-02-07 22:03:10</time>
+    最終更新：<time datetime="2018-02-07T14:20:21.821Z" itemprop="dateUpdated">2018-02-07 22:20:21</time>
 </span><br>
 
 
@@ -405,7 +405,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>このブログの内容物は<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
         </p>
     </div>
     <div class="bottom">

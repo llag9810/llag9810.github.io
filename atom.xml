@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-07T14:09:03.486Z</updated>
+  <updated>2018-02-07T14:17:55.000Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://llag9810.github.io/2018/02/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
     <id>http://llag9810.github.io/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
     <published>2018-02-07T13:27:34.000Z</published>
-    <updated>2018-02-07T14:09:03.486Z</updated>
+    <updated>2018-02-07T14:17:55.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：</p>
 <ol>
@@ -65,11 +65,11 @@
 <h2 id="3-4-Parallel-Old"><a href="#3-4-Parallel-Old" class="headerlink" title="3.4 Parallel Old"></a>3.4 Parallel Old</h2><p>Parallel Old是Parallel Scavenge收集器的老年代版本（并行收集器），使用多线程和Mark-Compact算法。</p>
 <h2 id="3-5-CMS"><a href="#3-5-CMS" class="headerlink" title="3.5 CMS"></a>3.5 CMS</h2><p>CMS（Current Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器，它是一种并发收集器，采用的是Mark-Sweep算法。</p>
 <h2 id="3-6-G1"><a href="#3-6-G1" class="headerlink" title="3.6 G1"></a>3.6 G1</h2><p>G1收集器是当今收集器技术发展最前沿的成果，它是一款面向服务端应用的收集器，它能充分利用多CPU、多核环境。因此它是一款并行与并发收集器，并且它能建立可预测的停顿时间模型。</p>
-<h1 id="4-内存分配及回收策略"><a href="#4-内存分配及回收策略" class="headerlink" title="4. 内存分配及回收策略"></a>4. 内存分配及回收策略</h1><h2 id="4-1-对象优先在Eden分配"><a href="#4-1-对象优先在Eden分配" class="headerlink" title="4.1 对象优先在Eden分配"></a>4.1 对象优先在Eden分配</h2><p>大多数情况下，对象在新生区 Eden 区中分配，当 Eden 没有足够空间分配时，虚拟机将发起一次 Minor GC，GC后将已有对象放入Survivor中，若 Survivor 空间不足，则通过分配担保机制提前转移到老年代。</p>
+<h1 id="4-内存分配及回收策略"><a href="#4-内存分配及回收策略" class="headerlink" title="4. 内存分配及回收策略"></a>4. 内存分配及回收策略</h1><h2 id="4-1-对象优先在-Eden-分配"><a href="#4-1-对象优先在-Eden-分配" class="headerlink" title="4.1 对象优先在 Eden 分配"></a>4.1 对象优先在 Eden 分配</h2><p>大多数情况下，对象在新生区 Eden 区中分配，当 Eden 没有足够空间分配时，虚拟机将发起一次 Minor GC，GC后将已有对象放入Survivor中，若 Survivor 空间不足，则通过分配担保机制提前转移到老年代。</p>
 <h2 id="4-2-大对象直接进入老年代"><a href="#4-2-大对象直接进入老年代" class="headerlink" title="4.2 大对象直接进入老年代"></a>4.2 大对象直接进入老年代</h2><p>所谓大对象是指需要大量连续内存空间的Java对象，例如较长的字符串和较长的数组。虚拟机提供了一个<code>-XX：PretenureSizeThreshold</code>参数，令大于这个值的参数直接在老年代分配。</p>
 <h2 id="4-3-长期存活的对象进入老年代"><a href="#4-3-长期存活的对象进入老年代" class="headerlink" title="4.3 长期存活的对象进入老年代"></a>4.3 长期存活的对象进入老年代</h2><p>虚拟机既然采用了分代收集的思想来管理内存，那么内存回收时就必须能识别对象放在新生代，哪些对象放在老年代。为了做到这点，虚拟机给每个对象定义一个对象年龄计数器。如果对象在Eden出生并经过第一次 Minor GC 然后仍然存活，并且能被 Survivor 容纳的话，将被移到 Survivor 中，并且对象年龄设为 1 。对象在 Survivor 中每过一次 Minor GC，年龄就增加一岁。当年龄增加到一定程度，就会晋升到老年代。对象晋升老年代的年龄阈值，可以通过参数<code>-XX:MaxTenuringThreshold</code>设置。</p>
 <h2 id="4-4-动态对象年龄判定"><a href="#4-4-动态对象年龄判定" class="headerlink" title="4.4 动态对象年龄判定"></a>4.4 动态对象年龄判定</h2><p>为了能更好的适应不同程序的内存状况，虚拟机并不是永远的要求对象必须达到 MaxTenuringThreshold 才能晋升老年代，如果在 Survivor 空间中相同年龄所有对象大小的总和大于 Survivor 空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代，无需达到 MaxTenuringThreshold 的要求。</p>
-<h2 id="4-5-空间分配担保"><a href="#4-5-空间分配担保" class="headerlink" title="4.5 空间分配担保"></a>4.5 空间分配担保</h2><p>在发生 Minor GC 之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象的总空间，如果这个条件成立，那么 Minor GC 可以确保是安全的。若不成立，则虚拟机会查看<code>HandlePromotionFailure</code>设置值是否担保失败，若允许，那么会继续检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小(相当于一个经验值，不保证可以成功)，如果大于，尽管这次 Minor GC 冒险，也会尝试进行一次 Minor GC ；如果小于，或者 HandlePromotionFailure 设置为不允许冒险，那么需要进行一次Full GC。</p>
+<h2 id="4-5-空间分配担保"><a href="#4-5-空间分配担保" class="headerlink" title="4.5 空间分配担保"></a>4.5 空间分配担保</h2><p>在发生 Minor GC 之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象的总空间，如果这个条件成立，那么 Minor GC 可以确保是安全的。若不成立，则虚拟机会查看<code>HandlePromotionFailure</code>设置值是否担保失败，若允许，那么会继续检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小(相当于一个经验值，不保证可以成功)，如果大于，尽管这次 Minor GC 冒险，也会尝试进行一次 Minor GC ；如果小于，或者 HandlePromotionFailure 设置为不允许冒险，那么需要进行一次 Full GC。</p>
 <h1 id="5-小结"><a href="#5-小结" class="headerlink" title="5. 小结"></a>5. 小结</h1><ul>
 <li><p>典型的 GC 算法包括标记-清除(mark and sweep)、复制(copying)、标记-整理(mark and Compact)。目前的 JVM 大都使用分代收集算法。对于新生代都采取 Copying 算法，老年代采取标记-整理算法。</p>
 </li>
@@ -96,9 +96,9 @@
     <link href="http://llag9810.github.io/2017/12/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>http://llag9810.github.io/2017/12/04/Java-虚拟机读书笔记（二）/</id>
     <published>2017-12-04T15:13:35.000Z</published>
-    <updated>2018-02-07T14:03:10.088Z</updated>
+    <updated>2018-02-07T14:20:21.821Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
+    <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
 <h1 id="2-什么是垃圾回收？"><a href="#2-什么是垃圾回收？" class="headerlink" title="2. 什么是垃圾回收？"></a>2. 什么是垃圾回收？</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
 <ul>
 <li>哪些内存需要回收?</li>
@@ -184,7 +184,7 @@
     
     <summary type="html">
     
-      &lt;h1 id=&quot;1-概述&quot;&gt;&lt;a href=&quot;#1-概述&quot; class=&quot;headerlink&quot; title=&quot;1. 概述&quot;&gt;&lt;/a&gt;1. 概述&lt;/h1&gt;&lt;p&gt;这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软
+      &lt;h1 id=&quot;1-概述&quot;&gt;&lt;a href=&quot;#1-概述&quot; class=&quot;headerlink&quot; title=&quot;1. 概述&quot;&gt;&lt;/a&gt;1. 概述&lt;/h1&gt;&lt;p&gt;这篇博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种
     
     </summary>
     
