@@ -13,7 +13,7 @@
     
     
     
-    <title>Java 虚拟机读书笔记（二） | 小窝 | Android/Java/随便写写</title>
+    <title>垃圾回收机制（上） | 小窝 | Android/Java/随便写写</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -23,15 +23,15 @@
     <meta name="description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java 虚拟机读书笔记（二）">
+<meta property="og:title" content="垃圾回收机制（上）">
 <meta property="og:url" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/index.html">
 <meta property="og:site_name" content="小窝">
 <meta property="og:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
 <meta property="og:image" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png">
-<meta property="og:updated_time" content="2018-02-04T16:34:08.000Z">
+<meta property="og:updated_time" content="2018-02-07T13:28:09.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java 虚拟机读书笔记（二）">
+<meta name="twitter:title" content="垃圾回收机制（上）">
 <meta name="twitter:description" content="1. 概述这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有finalize()方法的简介。有关垃圾回收算法的部分在下篇中填坑。
 2. 什么是垃圾回收？说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年">
 <meta name="twitter:image" content="http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png">
@@ -122,7 +122,7 @@
         <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
           <i class="icon icon-lg icon-navicon"></i>
         </a>
-        <div class="flex-col header-title ellipsis">Java 虚拟机读书笔记（二）</div>
+        <div class="flex-col header-title ellipsis">垃圾回收机制（上）</div>
         
         <div class="search-wrap" id="search-wrap">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
@@ -144,7 +144,7 @@
 <header class="content-header post-header">
 
     <div class="container fade-scale">
-        <h1 class="title">Java 虚拟机读书笔记（二）</h1>
+        <h1 class="title">垃圾回收机制（上）</h1>
         <h5 class="subtitle">
             
                 <time datetime="2018-02-04T15:13:35.000Z" itemprop="datePublished" class="page-time">
@@ -176,7 +176,7 @@
   class="post-article article-type-post fade" itemprop="blogPost">
 
     <div class="post-card">
-        <h1 class="post-card-title">Java 虚拟机读书笔记（二）</h1>
+        <h1 class="post-card-title">垃圾回收机制（上）</h1>
         <div class="post-meta">
             <time class="post-time" title="2018-02-04 23:13:35" datetime="2018-02-04T15:13:35.000Z"  itemprop="datePublished">2018-02-04</time>
 
@@ -271,7 +271,7 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2018-02-04T16:34:08.000Z" itemprop="dateUpdated">2018-02-05 00:34:08</time>
+    Last updated: <time datetime="2018-02-07T13:28:09.000Z" itemprop="dateUpdated">2018-02-07 21:28:09</time>
 </span><br>
 
 
@@ -301,7 +301,7 @@
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《垃圾回收机制（上）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -311,7 +311,7 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&source=Android learner" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《垃圾回收机制（上）》 — 小窝&source=Android learner" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -321,7 +321,7 @@
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 虚拟机读书笔记（二）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《垃圾回收机制（上）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -346,7 +346,14 @@
     </div>
 
     
-<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Java 垃圾回收（下篇）及典型的垃圾回收算法</h4>
+      </a>
+    </div>
   
 
   
@@ -412,7 +419,7 @@
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《垃圾回收机制（上）》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -422,7 +429,7 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《Java 虚拟机读书笔记（二）》 — 小窝&source=Android learner" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&title=《垃圾回收机制（上）》 — 小窝&source=Android learner" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -432,7 +439,7 @@
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 虚拟机读书笔记（二）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《垃圾回收机制（上）》 — 小窝&url=http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/&via=http://llag9810.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>

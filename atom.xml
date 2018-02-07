@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-04T16:34:08.000Z</updated>
+  <updated>2018-02-07T13:27:34.408Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -16,11 +16,25 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Java 虚拟机读书笔记（二）</title>
+    <title>Java 垃圾回收（下篇）及典型的垃圾回收算法</title>
+    <link href="http://llag9810.github.io/2018/02/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
+    <id>http://llag9810.github.io/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
+    <published>2018-02-07T13:27:34.000Z</published>
+    <updated>2018-02-07T13:27:34.408Z</updated>
+    
+    <summary type="html">
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>垃圾回收机制（上）</title>
     <link href="http://llag9810.github.io/2018/02/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</id>
     <published>2018-02-04T15:13:35.000Z</published>
-    <updated>2018-02-04T16:34:08.000Z</updated>
+    <updated>2018-02-07T13:28:09.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
 <h1 id="2-什么是垃圾回收？"><a href="#2-什么是垃圾回收？" class="headerlink" title="2. 什么是垃圾回收？"></a>2. 什么是垃圾回收？</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
@@ -199,7 +213,7 @@
     <link href="http://llag9810.github.io/2017/06/21/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%88%E4%B8%80%EF%BC%89/"/>
     <id>http://llag9810.github.io/2017/06/21/Java-虚拟机（一）/</id>
     <published>2017-06-21T10:57:08.000Z</published>
-    <updated>2018-02-05T15:12:53.554Z</updated>
+    <updated>2018-02-05T15:13:21.000Z</updated>
     
     <content type="html"><![CDATA[<p>这部分博客对应的是《深入理解 Java 虚拟机》第二章的部分内容，关于 OOM 异常的部分后面再填坑。</p>
 <h1 id="运行时数据区-Runtime-Data-Area"><a href="#运行时数据区-Runtime-Data-Area" class="headerlink" title="运行时数据区 Runtime Data Area"></a>运行时数据区 Runtime Data Area</h1><p>Java虚拟机在执行Java程序的过程中会把它所管理的内存划分为若干个不同的数据区<br>域。这些区域都有各自的用途，以及创建和销毁的时间，有的区域随着虚拟机进程的启动而<br>存在，有些区域则依赖用户线程的启动和结束而建立和销毁。根据Java虚拟机规范的规定，Java虚拟机所管理的内存将会包括以下几个运行时数据区域，如下图所示。</p>
