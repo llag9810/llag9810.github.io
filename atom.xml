@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-07T13:27:34.408Z</updated>
+  <updated>2018-02-07T14:02:40.000Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -17,12 +17,85 @@
   
   <entry>
     <title>Java 垃圾回收（下篇）及典型的垃圾回收算法</title>
-    <link href="http://llag9810.github.io/2018/02/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
-    <id>http://llag9810.github.io/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
-    <published>2018-02-07T13:27:34.000Z</published>
-    <updated>2018-02-07T13:27:34.408Z</updated>
+    <link href="http://llag9810.github.io/2018/01/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
+    <id>http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
+    <published>2018-01-07T13:27:34.000Z</published>
+    <updated>2018-02-07T14:02:40.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：</p>
+<ol>
+<li>典型的垃圾回收算法</li>
+<li>典型的垃圾收集器</li>
+<li>内存分配与回收策略</li>
+</ol>
+<p>注：本文有部分内容直接摘抄自《深入理解 Java 虚拟机》，也有部分内容直接引用自<a href="http://www.cnblogs.com/dolphin0520/p/3783345.html" target="_blank" rel="external">http://www.cnblogs.com/dolphin0520/p/3783345.html</a></p>
+<h1 id="2-典型的-GC-算法"><a href="#2-典型的-GC-算法" class="headerlink" title="2. 典型的 GC 算法"></a>2. 典型的 GC 算法</h1><p>在确定了哪些垃圾可以被回收后，垃圾收集器要做的事情就是开始 GC ，但是这里面涉及到一个问题是：如何高效地进行垃圾回收。由于 Java 虚拟机规范并没有对如何实现垃圾收集器做出明确的规定，因此各个厂商的虚拟机可以采用不同的方式来实现垃圾收集器，所以在此只讨论几种常见的垃圾收集算法的核心思想。</p>
+<h2 id="2-1-Mark-Sweep（标记-清除）算法"><a href="#2-1-Mark-Sweep（标记-清除）算法" class="headerlink" title="2.1 Mark-Sweep（标记-清除）算法"></a>2.1 Mark-Sweep（标记-清除）算法</h2><p>标记-清除算法分为两个阶段：标记阶段和清除阶段。标记阶段的任务是标记出所有需要被回收的对象，清除阶段就是回收被标记的对象所占用的空间。具体过程如下图所示：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg" alt="标记-清除算法示意图" title="">
+                </div>
+                <div class="image-caption">标记-清除算法示意图</div>
+            </figure>
+<p>从图中可以很容易看出标记-清除算法实现起来比较容易，但是有一个比较严重的问题就是容易产生内存碎片，碎片太多可能会导致后续过程中需要为大对象分配空间时无法找到足够的空间而提前触发新的一次垃圾收集动作。</p>
+<h2 id="2-2-Copying（复制）算法"><a href="#2-2-Copying（复制）算法" class="headerlink" title="2.2 Copying（复制）算法"></a>2.2 Copying（复制）算法</h2><p>为了解决 Mark-Sweep 算法的缺陷，Copying 算法就被提了出来。它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用的内存空间一次清理掉，这样一来就不容易出现内存碎片的问题。具体过程如下图所示：<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/copying.jpg" alt="复制算法示意图" title="">
+                </div>
+                <div class="image-caption">复制算法示意图</div>
+            </figure></p>
+<p>这种算法虽然实现简单，运行高效且不容易产生内存碎片，但是却对内存空间的使用做出了高昂的代价，因为能够使用的内存缩减到原来的一半。</p>
+<p>很显然，Copying算法的效率跟存活对象的数目多少有很大的关系，如果存活对象很多，那么Copying算法的效率将会大大降低。</p>
+<h2 id="2-3-Mark-Compact（标记-整理）算法"><a href="#2-3-Mark-Compact（标记-整理）算法" class="headerlink" title="2.3 Mark-Compact（标记-整理）算法"></a>2.3 Mark-Compact（标记-整理）算法</h2><p>为了解决Copying算法的缺陷，充分利用内存空间，提出了Mark-Compact算法。该算法标记阶段和Mark-Sweep一样，但是在完成标记之后，它不是直接清理可回收对象，而是将存活对象都向一端移动，然后清理掉端边界以外的内存。具体过程如下图所示：<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-compact.jpg" alt="标记-整理" title="">
+                </div>
+                <div class="image-caption">标记-整理</div>
+            </figure></p>
+<h2 id="2-4-Generational-Collection（分代收集）算法"><a href="#2-4-Generational-Collection（分代收集）算法" class="headerlink" title="2.4 Generational Collection（分代收集）算法"></a>2.4 Generational Collection（分代收集）算法</h2><p>分代收集算法是目前大部分 JVM 的垃圾收集器采用的算法。它的核心思想是根据对象存活的生命周期将内存划分为若干个不同的区域。一般情况下将堆区划分为老年代（Tenured Generation）和新生代（Young Generation），老年代的特点是每次垃圾收集时只有少量对象需要被回收，而新生代的特点是每次垃圾回收时都有大量的对象需要被回收，那么就可以根据不同代的特点采取最适合的收集算法。</p>
+<p>目前大部分垃圾收集器对于新生代都采取 Copying 算法，因为新生代中每次垃圾回收都要回收大部分对象，也就是说需要复制的操作次数较少，但是实际中并不是按照 1：1 的比例来划分新生代的空间的，一般来说是将新生代划分为一块较大的 Eden 空间和两块较小的 Survivor 空间，每次使用 Eden 空间和其中的一块 Survivor 空间，当进行回收时，将 Eden 和 Survivor 中还存活的对象复制到另一块 Survivor 空间中，然后清理掉Eden和刚才使用过的 Survivor 空间。</p>
+<p>而由于老年代的特点是每次回收都只回收少量对象，一般使用的 Mark-Compact算法。</p>
+<h1 id="3-典型的垃圾收集器"><a href="#3-典型的垃圾收集器" class="headerlink" title="3. 典型的垃圾收集器"></a>3. 典型的垃圾收集器</h1><p>垃圾收集算法是内存回收的理论基础，而垃圾收集器就是内存回收的具体实现。下面介绍一下 HotSpot（JDK 7) 虚拟机提供的几种垃圾收集器，用户可以根据自己的需求组合出各个年代使用的收集器。</p>
+<p>1.Serial/Serial Old</p>
+<p>Serial/Serial Old收集器是最基本最古老的收集器，它是一个单线程收集器，并且在它进行垃圾收集时，必须暂停所有用户线程。Serial 收集器是针对新生代的收集器，采用的是 Copying 算法，Serial Old 收集器是针对老年代的收集器，采用的是Mark-Compact算法。它的优点是实现简单高效，但是缺点是会给用户带来停顿。</p>
+<p>2.ParNew</p>
+<p>ParNew收集器是Serial收集器的多线程版本，使用多个线程进行垃圾收集。</p>
+<p>3.Parallel Scavenge</p>
+<p>Parallel Scavenge收集器是一个新生代的多线程收集器（并行收集器），它在回收期间不需要暂停其他用户线程，其采用的是Copying算法，该收集器与前两个收集器有所不同，它主要是为了达到一个可控的吞吐量。</p>
+<p>4.Parallel Old</p>
+<p>Parallel Old是Parallel Scavenge收集器的老年代版本（并行收集器），使用多线程和Mark-Compact算法。</p>
+<p>5.CMS</p>
+<p>CMS（Current Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器，它是一种并发收集器，采用的是Mark-Sweep算法。</p>
+<p>6.G1</p>
+<p>G1收集器是当今收集器技术发展最前沿的成果，它是一款面向服务端应用的收集器，它能充分利用多CPU、多核环境。因此它是一款并行与并发收集器，并且它能建立可预测的停顿时间模型。</p>
+<h1 id="4-内存分配及回收策略"><a href="#4-内存分配及回收策略" class="headerlink" title="4. 内存分配及回收策略"></a>4. 内存分配及回收策略</h1><ol>
+<li><p>对象优先在Eden分配：大多数情况下，对象在新生区 Eden 区中分配，当 Eden 没有足够空间分配时，虚拟机将发起一次 Minor GC，GC后将已有对象放入Survivor中，若 Survivor 空间不足，则通过分配担保机制提前转移到老年代。</p>
+</li>
+<li><p>大对象直接进入老年代。所谓大对象是指需要大量连续内存空间的Java对象，例如较长的字符串和较长的数组。虚拟机提供了一个<code>-XX：PretenureSizeThreshold</code>参数，令大于这个值的参数直接在老年代分配。</p>
+</li>
+<li><p>长期存活的对象进入老年代。虚拟机既然采用了分代收集的思想来管理内存，那么内存回收时就必须能识别对象放在新生代，哪些对象放在老年代。为了做到这点，虚拟机给每个对象定义一个对象年龄计数器。如果对象在Eden出生并经过第一次 Minor GC 然后仍然存活，并且能被 Survivor 容纳的话，将被移到 Survivor 中，并且对象年龄设为 1 。对象在 Survivor 中每过一次 Minor GC，年龄就增加一岁。当年龄增加到一定程度，就会晋升到老年代。对象晋升老年代的年龄阈值，可以通过参数<code>-XX:MaxTenuringThreshold</code>设置。</p>
+</li>
+<li><p>动态对象年龄判定。为了能更好的适应不同程序的内存状况，虚拟机并不是永远的要求对象必须达到 MaxTenuringThreshold 才能晋升老年代，如果在 Survivor 空间中相同年龄所有对象大小的总和大于 Survivor 空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代，无需达到 MaxTenuringThreshold 的要求。</p>
+</li>
+<li><p>空间分配担保。在发生 Minor GC 之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象的总空间，如果这个条件成立，那么 Minor GC 可以确保是安全的。若不成立，则虚拟机会查看<code>HandlePromotionFailure</code>设置值是否担保失败，若允许，那么会继续检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小(相当于一个经验值，不保证可以成功)，如果大于，尽管这次 Minor GC 冒险，也会尝试进行一次 Minor GC ；如果小于，或者 HandlePromotionFailure 设置为不允许冒险，那么需要进行一次Full GC。</p>
+</li>
+</ol>
+<h1 id="5-小结"><a href="#5-小结" class="headerlink" title="5. 小结"></a>5. 小结</h1><ul>
+<li><p>典型的 GC 算法包括标记-清除(mark and sweep)、复制(copying)、标记-整理(mark and Compact)。目前的 JVM 大都使用分代收集算法。对于新生代都采取 Copying 算法，老年代采取标记-整理算法。</p>
+</li>
+<li><p>一般新生代被划分为一块较大的 Eden 空间和两块较小的 Survivor 空间，每次使用 Eden 空间和其中的一块 Survivor 空间，当进行回收时，将 Eden 和 Survivor 中还存活的对象复制到另一块 Survivor 空间中，然后清理掉Eden和刚才使用过的 Survivor 空间。</p>
+</li>
+<li><p>对象优先在 Eden 分配，大对象和长期存活的对象会直接进入老年代。在发生 Minor GC 之前，会检查老年代的最大可用空间来进行空间分配担保。</p>
+</li>
+</ul>
+]]></content>
     
     <summary type="html">
+    
+      &lt;h1 id=&quot;1-概述&quot;&gt;&lt;a href=&quot;#1-概述&quot; class=&quot;headerlink&quot; title=&quot;1. 概述&quot;&gt;&lt;/a&gt;1. 概述&lt;/h1&gt;&lt;p&gt;在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想
     
     </summary>
     
@@ -30,11 +103,11 @@
   </entry>
   
   <entry>
-    <title>垃圾回收机制（上）</title>
-    <link href="http://llag9810.github.io/2018/02/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
-    <id>http://llag9810.github.io/2018/02/04/Java-虚拟机读书笔记（二）/</id>
-    <published>2018-02-04T15:13:35.000Z</published>
-    <updated>2018-02-07T13:28:09.000Z</updated>
+    <title>Java 垃圾回收机制（上）—— GC 简介</title>
+    <link href="http://llag9810.github.io/2017/12/04/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
+    <id>http://llag9810.github.io/2017/12/04/Java-虚拟机读书笔记（二）/</id>
+    <published>2017-12-04T15:13:35.000Z</published>
+    <updated>2018-02-07T13:51:09.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>这篇博客对应博客对应的是《深入理解 Java 虚拟机》第三章的部分内容。包括 GC 的简单介绍、判断对象存活的方法、强软弱虚四种引用，还有<code>finalize()</code>方法的简介。有关垃圾回收算法的部分在下篇中填坑。</p>
 <h1 id="2-什么是垃圾回收？"><a href="#2-什么是垃圾回收？" class="headerlink" title="2. 什么是垃圾回收？"></a>2. 什么是垃圾回收？</h1><p>说起垃圾回收(Garbage Collection,GC),大部分人都把这项技术当做Java语言的伴生产物。事实上,GC 的历史比 Java 久远,1960 年诞生于 MIT 的 Lisp 是第一门真正使用内存动态分配和垃圾收集技术的语言。当 Lisp 还在胚胎时时,人们就在思考 GC 需要完成的3件事情:</p>
@@ -65,7 +138,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="/2018/02/04/Java-虚拟机读书笔记（二）/gcroot.png" alt="可达性分析判断回收" title="">
+                    <img src="/2017/12/04/Java-虚拟机读书笔记（二）/gcroot.png" alt="可达性分析判断回收" title="">
                 </div>
                 <div class="image-caption">可达性分析判断回收</div>
             </figure>
@@ -100,7 +173,13 @@
 <p>从下面的代码中我们可以看到一个对象的<code>finalize()</code>被执行，但是它仍然可以存活。<br>（代码摘自《深入理解 Java 虚拟机》3.2章节）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">*此代码演示了两点:</div><div class="line">*1. 对象可以在被GC时自我拯救。</div><div class="line">*2. 这种自救的机会只有一次,因为一个对象的finalize()方法最多只会被系统自动调用一次</div><div class="line">*<span class="doctag">@author</span> zzm</div><div class="line">*/</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalizeEscapeGC</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> FinalizeEscapeGC SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">isAlive</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"yes,i am still alive:)"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        <span class="keyword">super</span>.finalize();</div><div class="line">        System.out.println(<span class="string">"finalize mehtod executed!"</span>);</div><div class="line">         <span class="comment">// 将自身赋值给一个静态成员变量，进行自我拯救</span></div><div class="line">        FinalizeEscapeGC.SAVE_HOOK = <span class="keyword">this</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        SAVE_HOOK = <span class="keyword">new</span> FinalizeEscapeGC();</div><div class="line">        <span class="comment">// 将SAVE_HOOK置null，使对象不可达。触发自救</span></div><div class="line">        SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line">        System.gc();</div><div class="line">        <span class="comment">// 因为finalize方法优先级很低,所以暂停0.5秒以等待它</span></div><div class="line">        Thread.sleep(<span class="number">500</span>);</div><div class="line">        <span class="keyword">if</span> (SAVE_HOOK != <span class="keyword">null</span>) &#123;</div><div class="line">            SAVE_HOOK.isAlive();</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">"no,i am dead:("</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 下面这段代码与上面的完全相同,但是这次自救却失败了</span></div><div class="line">        SAVE_HOOK = <span class="keyword">null</span>;</div><div class="line">        System.gc();</div><div class="line">        Thread.sleep(<span class="number">500</span>);</div><div class="line">        <span class="keyword">if</span> (SAVE_HOOK != <span class="keyword">null</span>) &#123;</div><div class="line">            SAVE_HOOK.isAlive();</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">"no,i am dead:("</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">finalize mehtod executed!</div><div class="line">yes,i am still alive:)</div><div class="line">no,i am dead:(</div></pre></td></tr></table></figure></p>
 <p>从结果可以看出，第一次SAVE_HOOK 对象的<code>finalize()</code>方法确实被 GC 收集器触发过,并且在被收集前成功逃脱了。<br>另外一个值得注意的地方是，main函数代码中有两段完全一样的代码片段，执行结果却是一次逃脱成功，一次失败。这是因为任何一个对象的<code>finalize()</code>方法都<strong>只会被系统自动调用一次</strong>。<br>如果对象面临下一次回收，它的<code>finalize()</code>方法不会被再次执行，因此第二段代码的自救行动失败了。</p>
-<h1 id="6-小结"><a href="#6-小结" class="headerlink" title="6. 小结"></a>6. 小结</h1><ul>
+<h1 id="6-回收方法区"><a href="#6-回收方法区" class="headerlink" title="6. 回收方法区"></a>6. 回收方法区</h1><p>很多人认为方法区(或者 HotSpot 虚拟机中的永久代)是没有垃圾收集的，Java虚拟机规范中确实说过可以不要求虚拟机在方法区实现垃圾收集，而且在方法区中进行垃圾收集的“性价比”一般比较低：在堆中，尤其是在新生代中，常规应用进行一次垃圾收集一般可以回收70%~95%的空间，而永久代的垃圾收集效率远低于此。<br>永久代的垃圾收集主要回收两部分内容:废弃常量和无用的类。回收废弃常量与回收 Java 堆中的对象非常类似。以常量池中字面量的回收为例，假如一个字符串“abc”已经进入了常量池中, 但是当前系统没有任何一个 String 对象是叫做“abc”的, 换句话说,就是没有任何 String 对象引用常量池中的“abc”常量，也没有其他地方引用了这个字面量，如果这时发生内存回收，而且必要的话，这个“abc”常量就会被系统清理出常量池。常量池中的其他类(接口)、方法、字段的符号引用也与此类似。<br>判定一个常量是否是“废弃常量”比较简单，而要判定一个类是否是“无用的类”的条件则相对苛刻许多。类需要同时满足下面3个条件才能算是“无用的类”:</p>
+<ul>
+<li>该类所有的实例都已经被回收,也就是 Java 堆中不存在该类的任何实例。</li>
+<li>加载该类的 ClassLoader 已经被回收。</li>
+<li>该类对应的<code>java.lang.Class</code>对象没有在任何地方被引用，无法在任何地方通过反射访问该类的方法。</li>
+</ul>
+<h1 id="7-小结"><a href="#7-小结" class="headerlink" title="7. 小结"></a>7. 小结</h1><ul>
 <li><p>判断对象能否回收的算法包括引用计数和可达性分析两种。前者实现较为简单，但是会有循环引用的问题。目前的主流语言使用的都是后者。在 Java 中，GC root 包括栈中的引用对象，方法区中的 static 引用和常量、native 方法中引用的对象。</p>
 </li>
 <li><p>强、软、弱、虚四种引用强度依次减弱。其中，强引用即代码中最常见的赋值引用，强引用只要存在就不会被回收。后面三种引用都是用 Java 中提供的类来使用。其中软引用会在系统即将发生内存异常时列入回收范围，当回收后内存依然不够时，会被回收。弱引用只要 GC 工作，无论内存足够与否都会被回收。虚引用无法通过其获得对象示例，只是会在被回收时通知。</p>

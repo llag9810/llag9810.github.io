@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Java 垃圾回收（下篇）及典型的垃圾回收算法 | 小窝 | Android/Java/随便写写</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="">
+    <meta name="description" content="1. 概述在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：
+
+典型的垃圾回收算法
+典型的垃圾收集器
+内存分配与回收策略
+
+注：本文有部分内容直接摘抄自《深入理解 Java 虚拟机》，也有部分内容直接引用自http://www.cnblogs.com/dolphin0520/p/3783345.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 垃圾回收（下篇）及典型的垃圾回收算法">
+<meta property="og:url" content="http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/index.html">
+<meta property="og:site_name" content="小窝">
+<meta property="og:description" content="1. 概述在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：
+
+典型的垃圾回收算法
+典型的垃圾收集器
+内存分配与回收策略
+
+注：本文有部分内容直接摘抄自《深入理解 Java 虚拟机》，也有部分内容直接引用自http://www.cnblogs.com/dolphin0520/p/3783345.html">
+<meta property="og:image" content="http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg">
+<meta property="og:image" content="http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/copying.jpg">
+<meta property="og:image" content="http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-compact.jpg">
+<meta property="og:updated_time" content="2018-02-07T14:02:40.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 垃圾回收（下篇）及典型的垃圾回收算法">
+<meta name="twitter:description" content="1. 概述在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：
+
+典型的垃圾回收算法
+典型的垃圾收集器
+内存分配与回收策略
+
+注：本文有部分内容直接摘抄自《深入理解 Java 虚拟机》，也有部分内容直接引用自http://www.cnblogs.com/dolphin0520/p/3783345.html">
+<meta name="twitter:image" content="http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg">
+    
+        <link rel="alternate" type="application/atom+xml" title="小窝" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">yifan</h5>
+          <a href="mailto:llag9810@outlook.com" title="llag9810@outlook.com" class="mail">llag9810@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/llag9810" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://hustdanielhu.com/" target="_blank" >
+                <i class="icon icon-lg icon-link"></i>
+                Danielhu&#39;s Blog
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Java 垃圾回收（下篇）及典型的垃圾回收算法</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Java 垃圾回收（下篇）及典型的垃圾回收算法</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2018-01-07T13:27:34.000Z" itemprop="datePublished" class="page-time">
+  2018-01-07
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#1-概述"><span class="post-toc-text">1. 概述</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#2-典型的-GC-算法"><span class="post-toc-text">2. 典型的 GC 算法</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-1-Mark-Sweep（标记-清除）算法"><span class="post-toc-text">2.1 Mark-Sweep（标记-清除）算法</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-2-Copying（复制）算法"><span class="post-toc-text">2.2 Copying（复制）算法</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-3-Mark-Compact（标记-整理）算法"><span class="post-toc-text">2.3 Mark-Compact（标记-整理）算法</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-4-Generational-Collection（分代收集）算法"><span class="post-toc-text">2.4 Generational Collection（分代收集）算法</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#3-典型的垃圾收集器"><span class="post-toc-text">3. 典型的垃圾收集器</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#4-内存分配及回收策略"><span class="post-toc-text">4. 内存分配及回收策略</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#5-小结"><span class="post-toc-text">5. 小结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Java-垃圾回收（下篇）及典型的垃圾回收算法"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Java 垃圾回收（下篇）及典型的垃圾回收算法</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2018-01-07 21:27:34" datetime="2018-01-07T13:27:34.000Z"  itemprop="datePublished">2018-01-07</time>
+
+            
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：</p>
+<ol>
+<li>典型的垃圾回收算法</li>
+<li>典型的垃圾收集器</li>
+<li>内存分配与回收策略</li>
+</ol>
+<p>注：本文有部分内容直接摘抄自《深入理解 Java 虚拟机》，也有部分内容直接引用自<a href="http://www.cnblogs.com/dolphin0520/p/3783345.html" target="_blank" rel="external">http://www.cnblogs.com/dolphin0520/p/3783345.html</a></p>
+<h1 id="2-典型的-GC-算法"><a href="#2-典型的-GC-算法" class="headerlink" title="2. 典型的 GC 算法"></a>2. 典型的 GC 算法</h1><p>在确定了哪些垃圾可以被回收后，垃圾收集器要做的事情就是开始 GC ，但是这里面涉及到一个问题是：如何高效地进行垃圾回收。由于 Java 虚拟机规范并没有对如何实现垃圾收集器做出明确的规定，因此各个厂商的虚拟机可以采用不同的方式来实现垃圾收集器，所以在此只讨论几种常见的垃圾收集算法的核心思想。</p>
+<h2 id="2-1-Mark-Sweep（标记-清除）算法"><a href="#2-1-Mark-Sweep（标记-清除）算法" class="headerlink" title="2.1 Mark-Sweep（标记-清除）算法"></a>2.1 Mark-Sweep（标记-清除）算法</h2><p>标记-清除算法分为两个阶段：标记阶段和清除阶段。标记阶段的任务是标记出所有需要被回收的对象，清除阶段就是回收被标记的对象所占用的空间。具体过程如下图所示：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg" alt="标记-清除算法示意图" title="">
+                </div>
+                <div class="image-caption">标记-清除算法示意图</div>
+            </figure>
+<p>从图中可以很容易看出标记-清除算法实现起来比较容易，但是有一个比较严重的问题就是容易产生内存碎片，碎片太多可能会导致后续过程中需要为大对象分配空间时无法找到足够的空间而提前触发新的一次垃圾收集动作。</p>
+<h2 id="2-2-Copying（复制）算法"><a href="#2-2-Copying（复制）算法" class="headerlink" title="2.2 Copying（复制）算法"></a>2.2 Copying（复制）算法</h2><p>为了解决 Mark-Sweep 算法的缺陷，Copying 算法就被提了出来。它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用的内存空间一次清理掉，这样一来就不容易出现内存碎片的问题。具体过程如下图所示：<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/copying.jpg" alt="复制算法示意图" title="">
+                </div>
+                <div class="image-caption">复制算法示意图</div>
+            </figure></p>
+<p>这种算法虽然实现简单，运行高效且不容易产生内存碎片，但是却对内存空间的使用做出了高昂的代价，因为能够使用的内存缩减到原来的一半。</p>
+<p>很显然，Copying算法的效率跟存活对象的数目多少有很大的关系，如果存活对象很多，那么Copying算法的效率将会大大降低。</p>
+<h2 id="2-3-Mark-Compact（标记-整理）算法"><a href="#2-3-Mark-Compact（标记-整理）算法" class="headerlink" title="2.3 Mark-Compact（标记-整理）算法"></a>2.3 Mark-Compact（标记-整理）算法</h2><p>为了解决Copying算法的缺陷，充分利用内存空间，提出了Mark-Compact算法。该算法标记阶段和Mark-Sweep一样，但是在完成标记之后，它不是直接清理可回收对象，而是将存活对象都向一端移动，然后清理掉端边界以外的内存。具体过程如下图所示：<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-compact.jpg" alt="标记-整理" title="">
+                </div>
+                <div class="image-caption">标记-整理</div>
+            </figure></p>
+<h2 id="2-4-Generational-Collection（分代收集）算法"><a href="#2-4-Generational-Collection（分代收集）算法" class="headerlink" title="2.4 Generational Collection（分代收集）算法"></a>2.4 Generational Collection（分代收集）算法</h2><p>分代收集算法是目前大部分 JVM 的垃圾收集器采用的算法。它的核心思想是根据对象存活的生命周期将内存划分为若干个不同的区域。一般情况下将堆区划分为老年代（Tenured Generation）和新生代（Young Generation），老年代的特点是每次垃圾收集时只有少量对象需要被回收，而新生代的特点是每次垃圾回收时都有大量的对象需要被回收，那么就可以根据不同代的特点采取最适合的收集算法。</p>
+<p>目前大部分垃圾收集器对于新生代都采取 Copying 算法，因为新生代中每次垃圾回收都要回收大部分对象，也就是说需要复制的操作次数较少，但是实际中并不是按照 1：1 的比例来划分新生代的空间的，一般来说是将新生代划分为一块较大的 Eden 空间和两块较小的 Survivor 空间，每次使用 Eden 空间和其中的一块 Survivor 空间，当进行回收时，将 Eden 和 Survivor 中还存活的对象复制到另一块 Survivor 空间中，然后清理掉Eden和刚才使用过的 Survivor 空间。</p>
+<p>而由于老年代的特点是每次回收都只回收少量对象，一般使用的 Mark-Compact算法。</p>
+<h1 id="3-典型的垃圾收集器"><a href="#3-典型的垃圾收集器" class="headerlink" title="3. 典型的垃圾收集器"></a>3. 典型的垃圾收集器</h1><p>垃圾收集算法是内存回收的理论基础，而垃圾收集器就是内存回收的具体实现。下面介绍一下 HotSpot（JDK 7) 虚拟机提供的几种垃圾收集器，用户可以根据自己的需求组合出各个年代使用的收集器。</p>
+<p>1.Serial/Serial Old</p>
+<p>Serial/Serial Old收集器是最基本最古老的收集器，它是一个单线程收集器，并且在它进行垃圾收集时，必须暂停所有用户线程。Serial 收集器是针对新生代的收集器，采用的是 Copying 算法，Serial Old 收集器是针对老年代的收集器，采用的是Mark-Compact算法。它的优点是实现简单高效，但是缺点是会给用户带来停顿。</p>
+<p>2.ParNew</p>
+<p>ParNew收集器是Serial收集器的多线程版本，使用多个线程进行垃圾收集。</p>
+<p>3.Parallel Scavenge</p>
+<p>Parallel Scavenge收集器是一个新生代的多线程收集器（并行收集器），它在回收期间不需要暂停其他用户线程，其采用的是Copying算法，该收集器与前两个收集器有所不同，它主要是为了达到一个可控的吞吐量。</p>
+<p>4.Parallel Old</p>
+<p>Parallel Old是Parallel Scavenge收集器的老年代版本（并行收集器），使用多线程和Mark-Compact算法。</p>
+<p>5.CMS</p>
+<p>CMS（Current Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器，它是一种并发收集器，采用的是Mark-Sweep算法。</p>
+<p>6.G1</p>
+<p>G1收集器是当今收集器技术发展最前沿的成果，它是一款面向服务端应用的收集器，它能充分利用多CPU、多核环境。因此它是一款并行与并发收集器，并且它能建立可预测的停顿时间模型。</p>
+<h1 id="4-内存分配及回收策略"><a href="#4-内存分配及回收策略" class="headerlink" title="4. 内存分配及回收策略"></a>4. 内存分配及回收策略</h1><ol>
+<li><p>对象优先在Eden分配：大多数情况下，对象在新生区 Eden 区中分配，当 Eden 没有足够空间分配时，虚拟机将发起一次 Minor GC，GC后将已有对象放入Survivor中，若 Survivor 空间不足，则通过分配担保机制提前转移到老年代。</p>
+</li>
+<li><p>大对象直接进入老年代。所谓大对象是指需要大量连续内存空间的Java对象，例如较长的字符串和较长的数组。虚拟机提供了一个<code>-XX：PretenureSizeThreshold</code>参数，令大于这个值的参数直接在老年代分配。</p>
+</li>
+<li><p>长期存活的对象进入老年代。虚拟机既然采用了分代收集的思想来管理内存，那么内存回收时就必须能识别对象放在新生代，哪些对象放在老年代。为了做到这点，虚拟机给每个对象定义一个对象年龄计数器。如果对象在Eden出生并经过第一次 Minor GC 然后仍然存活，并且能被 Survivor 容纳的话，将被移到 Survivor 中，并且对象年龄设为 1 。对象在 Survivor 中每过一次 Minor GC，年龄就增加一岁。当年龄增加到一定程度，就会晋升到老年代。对象晋升老年代的年龄阈值，可以通过参数<code>-XX:MaxTenuringThreshold</code>设置。</p>
+</li>
+<li><p>动态对象年龄判定。为了能更好的适应不同程序的内存状况，虚拟机并不是永远的要求对象必须达到 MaxTenuringThreshold 才能晋升老年代，如果在 Survivor 空间中相同年龄所有对象大小的总和大于 Survivor 空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代，无需达到 MaxTenuringThreshold 的要求。</p>
+</li>
+<li><p>空间分配担保。在发生 Minor GC 之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象的总空间，如果这个条件成立，那么 Minor GC 可以确保是安全的。若不成立，则虚拟机会查看<code>HandlePromotionFailure</code>设置值是否担保失败，若允许，那么会继续检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小(相当于一个经验值，不保证可以成功)，如果大于，尽管这次 Minor GC 冒险，也会尝试进行一次 Minor GC ；如果小于，或者 HandlePromotionFailure 设置为不允许冒险，那么需要进行一次Full GC。</p>
+</li>
+</ol>
+<h1 id="5-小结"><a href="#5-小结" class="headerlink" title="5. 小结"></a>5. 小结</h1><ul>
+<li><p>典型的 GC 算法包括标记-清除(mark and sweep)、复制(copying)、标记-整理(mark and Compact)。目前的 JVM 大都使用分代收集算法。对于新生代都采取 Copying 算法，老年代采取标记-整理算法。</p>
+</li>
+<li><p>一般新生代被划分为一块较大的 Eden 空间和两块较小的 Survivor 空间，每次使用 Eden 空间和其中的一块 Survivor 空间，当进行回收时，将 Eden 和 Survivor 中还存活的对象复制到另一块 Survivor 空间中，然后清理掉Eden和刚才使用过的 Survivor 空间。</p>
+</li>
+<li><p>对象优先在 Eden 分配，大对象和长期存活的对象会直接进入老年代。在发生 Minor GC 之前，会检查老年代的最大可用空间来进行空间分配担保。</p>
+</li>
+</ul>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last updated: <time datetime="2018-02-07T14:02:40.000Z" itemprop="dateUpdated">2018-02-07 22:02:40</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" target="_blank" rel="external">http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="http://llag9810.github.io">
+            <img src="/img/avatar.jpg" alt="yifan">
+            yifan
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&title=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&title=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&source=Android learner" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&via=http://llag9810.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/12/04/Java-虚拟机读书笔记（二）/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Java 垃圾回收机制（上）—— GC 简介</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>yifan &copy; 2017 - 2018</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&title=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&pic=http://llag9810.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&title=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&source=Android learner" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java 垃圾回收（下篇）及典型的垃圾回收算法》 — 小窝&url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/&via=http://llag9810.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
