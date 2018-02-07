@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://llag9810.github.io/"/>
-  <updated>2018-02-07T14:05:16.339Z</updated>
+  <updated>2018-02-07T14:09:03.486Z</updated>
   <id>http://llag9810.github.io/</id>
   
   <author>
@@ -17,10 +17,10 @@
   
   <entry>
     <title>Java 垃圾回收（下篇）及典型的垃圾回收算法</title>
-    <link href="http://llag9810.github.io/2018/01/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
-    <id>http://llag9810.github.io/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
-    <published>2018-01-07T13:27:34.000Z</published>
-    <updated>2018-02-07T14:05:16.339Z</updated>
+    <link href="http://llag9810.github.io/2018/02/07/Java-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%8B%E7%AF%87%EF%BC%89%E5%8F%8A%E5%85%B8%E5%9E%8B%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/"/>
+    <id>http://llag9810.github.io/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/</id>
+    <published>2018-02-07T13:27:34.000Z</published>
+    <updated>2018-02-07T14:09:03.486Z</updated>
     
     <content type="html"><![CDATA[<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>在上篇中，我们提到了什么是 GC、GC 的原理、何时该 GC 等问题，但是具体的垃圾回收算法没有提到。在本篇博客中，我想主要讲述以下几方面内容：</p>
 <ol>
@@ -34,7 +34,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg" alt="标记-清除算法示意图" title="">
+                    <img src="/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-sweep.jpg" alt="标记-清除算法示意图" title="">
                 </div>
                 <div class="image-caption">标记-清除算法示意图</div>
             </figure>
@@ -42,7 +42,7 @@
 <h2 id="2-2-Copying（复制）算法"><a href="#2-2-Copying（复制）算法" class="headerlink" title="2.2 Copying（复制）算法"></a>2.2 Copying（复制）算法</h2><p>为了解决 Mark-Sweep 算法的缺陷，Copying 算法就被提了出来。它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用的内存空间一次清理掉，这样一来就不容易出现内存碎片的问题。具体过程如下图所示：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/copying.jpg" alt="复制算法示意图" title="">
+                    <img src="/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/copying.jpg" alt="复制算法示意图" title="">
                 </div>
                 <div class="image-caption">复制算法示意图</div>
             </figure></p>
@@ -51,7 +51,7 @@
 <h2 id="2-3-Mark-Compact（标记-整理）算法"><a href="#2-3-Mark-Compact（标记-整理）算法" class="headerlink" title="2.3 Mark-Compact（标记-整理）算法"></a>2.3 Mark-Compact（标记-整理）算法</h2><p>为了解决Copying算法的缺陷，充分利用内存空间，提出了Mark-Compact算法。该算法标记阶段和Mark-Sweep一样，但是在完成标记之后，它不是直接清理可回收对象，而是将存活对象都向一端移动，然后清理掉端边界以外的内存。具体过程如下图所示：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="/2018/01/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-compact.jpg" alt="标记-整理" title="">
+                    <img src="/2018/02/07/Java-垃圾回收（下篇）及典型的垃圾回收算法/mark-compact.jpg" alt="标记-整理" title="">
                 </div>
                 <div class="image-caption">标记-整理</div>
             </figure></p>
