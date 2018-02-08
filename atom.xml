@@ -283,7 +283,7 @@
     <link href="http://llag9810.github.io/2017/06/21/Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%88%E4%B8%80%EF%BC%89/"/>
     <id>http://llag9810.github.io/2017/06/21/Java-虚拟机（一）/</id>
     <published>2017-06-21T10:57:08.000Z</published>
-    <updated>2018-02-05T15:13:21.000Z</updated>
+    <updated>2018-02-08T08:43:37.478Z</updated>
     
     <content type="html"><![CDATA[<p>这部分博客对应的是《深入理解 Java 虚拟机》第二章的部分内容，关于 OOM 异常的部分后面再填坑。</p>
 <h1 id="运行时数据区-Runtime-Data-Area"><a href="#运行时数据区-Runtime-Data-Area" class="headerlink" title="运行时数据区 Runtime Data Area"></a>运行时数据区 Runtime Data Area</h1><p>Java虚拟机在执行Java程序的过程中会把它所管理的内存划分为若干个不同的数据区<br>域。这些区域都有各自的用途，以及创建和销毁的时间，有的区域随着虚拟机进程的启动而<br>存在，有些区域则依赖用户线程的启动和结束而建立和销毁。根据Java虚拟机规范的规定，Java虚拟机所管理的内存将会包括以下几个运行时数据区域，如下图所示。</p>
