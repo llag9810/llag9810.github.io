@@ -7,20 +7,21 @@
   
   <title>自底向上看Kotlin协程 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="关键要点 JVM 并未提供 native 的协程支持 Kotlin 在编译器中通过（将函数）转换为状态机实现协程 Kotlin 实现协程只使用了一个保留字，剩余部分都通过 Library 实现 Kotlin 使用 Continuation Passing Style(CPS) 来实现 协程会使用调度器 (Dispatchers)，所以在 JavaFX，Android 和 Swing 中使用可能会有">
+  <meta name="description" content="翻译自 A Bottom-Up View of Kotlin Coroutines原文链接：https:&#x2F;&#x2F;www.infoq.com&#x2F;articles&#x2F;kotlin-coroutines-bottom-up&#x2F; 关键要点 JVM 并未提供 native 的协程支持 Kotlin 在编译器中通过（将函数）转换为状态机实现协程 Kotlin 实现协程只使用了一个保留字，剩余部分都通过 Library">
 <meta property="og:type" content="article">
 <meta property="og:title" content="自底向上看Kotlin协程">
 <meta property="og:url" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="关键要点 JVM 并未提供 native 的协程支持 Kotlin 在编译器中通过（将函数）转换为状态机实现协程 Kotlin 实现协程只使用了一个保留字，剩余部分都通过 Library 实现 Kotlin 使用 Continuation Passing Style(CPS) 来实现 协程会使用调度器 (Dispatchers)，所以在 JavaFX，Android 和 Swing 中使用可能会有">
+<meta property="og:description" content="翻译自 A Bottom-Up View of Kotlin Coroutines原文链接：https:&#x2F;&#x2F;www.infoq.com&#x2F;articles&#x2F;kotlin-coroutines-bottom-up&#x2F; 关键要点 JVM 并未提供 native 的协程支持 Kotlin 在编译器中通过（将函数）转换为状态机实现协程 Kotlin 实现协程只使用了一个保留字，剩余部分都通过 Library">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/1.jpg">
 <meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/2.jpg">
 <meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/3.jpg">
 <meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/4.jpg">
 <meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/5.jpg">
+<meta property="og:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/6.jpg">
 <meta property="article:published_time" content="2020-01-19T08:40:05.000Z">
-<meta property="article:modified_time" content="2020-01-19T08:43:45.828Z">
+<meta property="article:modified_time" content="2020-01-19T09:06:23.044Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/1.jpg">
   
@@ -93,7 +94,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="关键要点"><a href="#关键要点" class="headerlink" title="关键要点"></a>关键要点</h1><ul>
+        <p>翻译自 A Bottom-Up View of Kotlin Coroutines<br>原文链接：<a href="https://www.infoq.com/articles/kotlin-coroutines-bottom-up/" target="_blank" rel="noopener">https://www.infoq.com/articles/kotlin-coroutines-bottom-up/</a></p>
+<h1 id="关键要点"><a href="#关键要点" class="headerlink" title="关键要点"></a>关键要点</h1><ul>
 <li>JVM 并未提供 native 的协程支持</li>
 <li>Kotlin 在编译器中通过（将函数）转换为状态机实现协程</li>
 <li>Kotlin 实现协程只使用了一个保留字，剩余部分都通过 Library 实现</li>
@@ -105,7 +107,7 @@
 <p>近期在 JVM 平台上，协程已成为响应式编程 (Reactive Programming) 之外的另一种选择。诸如 RxJava 和 Project Reactor 等框架提供给用户一种增量处理信息的方式，同时对节流和并行提供了广泛的支持。但是你必须使用响应式流 (reactive streams) 和函数式操作 (functional operation) 重构代码，在许多场景下这是弊大于利的。</p>
 <p>这就是 Android 社区内一直在寻求一种更简单的替代方案的原因。Kotlin 语言引入协程并将其作为实验功能来满足需求，同时在经过一些修订之后，Kotlin 的 1.3 版本已经将其作为正式 feature。协程已经逐渐跳出了 GUI 开发的圈子，被服务端框架（比如Spring 5）和 Arrow 等函数式编程框架采用。</p>
 <hr>
-<h1 id="理解协程的挑战"><a href="#理解协程的挑战" class="headerlink" title="理解协程的挑战"></a>理解协程的挑战</h1><p>不幸的是，理解协程并不容易。尽管已经有非常多来自 Kotlin 砖家的访谈，但是其中很多只是对“协程是什么”或者“如何使用协程”提供了单一的看法，很难将这些看法聚合在一块。你可能会说协程是并行编程中的 monads。</p>
+<h1 id="学习协程的挑战"><a href="#学习协程的挑战" class="headerlink" title="学习协程的挑战"></a>学习协程的挑战</h1><p>不幸的是，理解协程并不容易。尽管已经有非常多来自 Kotlin 砖家的访谈，但是其中很多只是对“协程是什么”或者“如何使用协程”提供了单一的看法，很难将这些看法聚合在一块。你可能会说协程是并行编程中的 monads。</p>
 <p>一部分问题在于其背后的实现。Kotlin 编译器只实现了一个 <strong>suspend</strong> 关键词，剩余部分都由协程库来处理。协程从结果上看来一个非常强大和灵活的工具，但是也有些杂乱无章。这就给新手学习造成了障碍，他们需要通过可靠的引导和严格的规范才能学好。这篇文章从自底向上的视角来看协程，希望能够以此提供一些基础。</p>
 <h1 id="示例程序（服务端）"><a href="#示例程序（服务端）" class="headerlink" title="示例程序（服务端）"></a>示例程序（服务端）</h1><p>我们的应用将基于一个经典的问题，这个问题需要安全有效地多次调用 RESTful 服务。我们来玩一个《Where’s Waldo》的文字版游戏——用户需要遵循一系列名字的规则，直到最终到达“ Waldo”。</p>
 <p>下面是一个使用 Http4k 编写的 RESTful 服务。Marius Eriksen 在一篇众所周知的 paper 中提出了一种函数式服务端架构，Http4k 就是这一架构的 Kotlin 实现。这一框架在许多其他语言中都有实现，包括 Scala(Http4s)和Java8(Http4j)。</p>
@@ -142,11 +144,17 @@
 <p><img src="/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/5.jpg" alt="5"></p>
 <p>可以看到，在这一特定情况下，Main Dispatcher 在线程17上运行，而 IO Dispatcher 在包含线程 24 和 26 的线程池上运行。</p>
 <h1 id="开始探索"><a href="#开始探索" class="headerlink" title="开始探索"></a>开始探索</h1><p>使用 IntelliJ 自带的字节码反汇编工具，我们可以一探究竟。当然我们还可以使用 JDK 随附的标准“javap”工具。</p>
+<p><img src="/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/6.jpg" alt="6"></p>
+<p>我们可以看到<code>HttpWaldoFinder</code> 的方法签名变了。它额外多了一个参数接受 continuation 对象，同时返回值变成了一个 Object。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpWaldoFinder</span> <span class="title">extends</span> <span class="title">Controller</span> <span class="title">implements</span> <span class="title">WaldoFinder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> Object wheresWaldo(String a, Continuation b)</span><br><span class="line">  <span class="keyword">final</span> synthetic Object fetchNewName(String a, Continuation b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们深入研究添加到这些方法中的代码，并解释“continuation”是什么以及现在的返回值究竟是什么。</p>
+<h1 id="Continuation-Passing-Style-CPS"><a href="#Continuation-Passing-Style-CPS" class="headerlink" title="Continuation Passing Style (CPS)"></a>Continuation Passing Style (CPS)</h1><p>未完待续……</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/" data-id="ck5ks8n3l0000jks66gind9dz" class="article-share-link">Share</a>
+      <a data-url="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/" data-id="ck5ksqrz60001s56j95gcfqp4" class="article-share-link">Share</a>
       
       
     </footer>
