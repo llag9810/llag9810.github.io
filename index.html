@@ -136,16 +136,28 @@
 <p>可以看到，在这一特定情况下，Main Dispatcher 在线程17上运行，而 IO Dispatcher 在包含线程 24 和 26 的线程池上运行。</p>
 <h1 id="开始探索"><a href="#开始探索" class="headerlink" title="开始探索"></a>开始探索</h1><p>使用 IntelliJ 自带的字节码反汇编工具，我们可以一探究竟。当然我们还可以使用 JDK 随附的标准“javap”工具。</p>
 <p><img src="/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/6.jpg" alt="6"></p>
-<p>我们可以看到<code>HttpWaldoFinder</code> 的方法签名变了。它额外多了一个参数接受 continuation 对象，同时返回值变成了一个 Object。</p>
+<p>我们可以看到 <code>HttpWaldoFinder</code> 的方法签名变了。它额外多了一个参数接受 continuation 对象，同时返回值变成了一个 Object。</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpWaldoFinder</span> <span class="title">extends</span> <span class="title">Controller</span> <span class="title">implements</span> <span class="title">WaldoFinder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> Object wheresWaldo(String a, Continuation b)</span><br><span class="line">  <span class="keyword">final</span> synthetic Object fetchNewName(String a, Continuation b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>接下来我们深入研究添加到这些方法中的代码，并解释“continuation”是什么以及现在的返回值究竟是什么。</p>
-<h1 id="Continuation-Passing-Style-CPS"><a href="#Continuation-Passing-Style-CPS" class="headerlink" title="Continuation Passing Style (CPS)"></a>Continuation Passing Style (CPS)</h1><p>未完待续……</p>
+<p>接下来我们深入研究添加到这些方法中的代码，并解释“continuation”是什么，以及被修改过的函数返回值到底是什么。</p>
+<h1 id="Continuation-Passing-Style-CPS"><a href="#Continuation-Passing-Style-CPS" class="headerlink" title="Continuation Passing Style (CPS)"></a>Continuation Passing Style (CPS)</h1><p>按照 Kotlin 标准化进程中的协程提案记载，协程的实现是基于 Continuation Passing Style。而 continuation 对象用于存储函数挂起时所必须的状态。</p>
+<p>实际上，suspend 函数中的每个局部变量都会成为 continuation 对象中的一个属性。同时如果函数是某个类的方法，还会为该函数的参数和当前对象的引用创建 continuation 中的属性。假设一个挂起方法有 4 个参数和 5 个局部变量，那么生成的 continuation 对象中有至少 10 个字段。</p>
+<p>在 <code>HttpWaldoFinder</code> 类的 <code>wheresWaldo</code> 方法中，有一个参数，4 个局部变量。所以 continuation 对象当中应当有 6 个字段。若我们将 kotlin 编译器生成的字节码反编译为 Java 代码，可以发现的确如此：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$continuation = new ContinuationImpl($completion) &#123;</span><br><span class="line">  Object result;</span><br><span class="line">  int label;</span><br><span class="line">  Object L$<span class="number">0</span>;</span><br><span class="line">  Object L$<span class="number">1</span>;</span><br><span class="line">  Object L$<span class="number">2</span>;</span><br><span class="line">  Object L$<span class="number">3</span>;</span><br><span class="line">  Object L$<span class="number">4</span>;</span><br><span class="line">  Object L$<span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Nullable</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> Object invokeSuspend(<span class="meta">@NotNull</span> Object $result) &#123;</span><br><span class="line">     <span class="keyword">this</span>.result = $result;</span><br><span class="line">     <span class="keyword">this</span>.label |= Integer.MIN_VALUE;</span><br><span class="line">     <span class="keyword">return</span> HttpWaldoFinder.<span class="keyword">this</span>.wheresWaldo((String)<span class="literal">null</span>, <span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>由于所有成员变量都是 Object 类型，因此它们的作用并不是很明显。但是随着我们进一步探索，我们将看到：</p>
+<ul>
+<li><code>L$0</code>保存对<code>HttpWaldoFinder</code>实例的引用。始终如此。</li>
+<li><code>L$1</code>保存<code>starterName</code>参数的值。始终如此。</li>
+<li><code>L$2</code>至<code>L$5</code>保留局部变量的值。这些将在代码执行时逐步填充。<code>L$2</code>将保留<code>firstName</code>的值，依此类推。</li>
+</ul>
+<p>我们还有其他字段用于最终结果，和一个有趣的整数，称为“label”。</p>
+<h1 id="挂起还是不挂起—这是一个值得考虑的问题"><a href="#挂起还是不挂起—这是一个值得考虑的问题" class="headerlink" title="挂起还是不挂起—这是一个值得考虑的问题"></a>挂起还是不挂起—这是一个值得考虑的问题</h1><p>(未完待续)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/" data-id="ck5ksqrz60001s56j95gcfqp4" class="article-share-link">Share</a>
+      <a data-url="http://llag9810.github.io/2020/01/19/%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9C%8BKotlin%E5%8D%8F%E7%A8%8B/" data-id="ck5kux3xw0000fd6jfjseeqbi" class="article-share-link">Share</a>
       
       
     </footer>
@@ -194,7 +206,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://llag9810.github.io/2020/01/19/hello-world/" data-id="ck5ksqrz00000s56j7hbdfsk6" class="article-share-link">Share</a>
+      <a data-url="http://llag9810.github.io/2020/01/19/hello-world/" data-id="ck5kux3yc0001fd6j1sfkd9vm" class="article-share-link">Share</a>
       
       
     </footer>
